@@ -7,9 +7,10 @@ import PageNotFound from './pages/PageNotFound';
 import Private from './ui/private';
 import GlobalStyles from "./styles/GlobalStyles";
 import Navbar from './components/Navbar';
-import Home from './pages/Home';
+// import Home from './pages/Home';
 import Footer from './components/Footer';
 import styled from 'styled-components';
+import PropertySearch from './pages/PropertySearch';
 
 const AppContainer = styled.div`
   font-family: 'Inter', sans-serif;
@@ -25,7 +26,8 @@ function App() {
           <Navbar />
           <Routes>
             {/* <Route element={<Private />}> */}
-            <Route path="/" element={<Home />} />
+            {/* <Route path="/" element={<Home />} /> */}
+            <Route path="/" element={<PropertySearch />} />
             {/* </Route> */}
 
 
