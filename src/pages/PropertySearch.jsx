@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaSearch, FaHome, FaFilter, FaStar, FaMapMarkerAlt, FaRupeeSign, FaBed, FaUsers } from 'react-icons/fa';
+import { FaSearch, FaHome, FaFilter, FaStar, FaMapMarkerAlt, FaRupeeSign, FaBed, FaUsers, FaSwimmingPool, FaUtensils, FaDumbbell, FaWifi } from 'react-icons/fa';
 import { MdClear } from 'react-icons/md';
-import dummyData from '../utils/dummydata';
-
+import PropertyCardSearch from '../ui/PropertyCardSearch'
+import { CountrySelect, StateSelect, CitySelect } from "react-country-state-city";
+import "react-country-state-city/dist/react-country-state-city.css";
 
 // Styled Components
 const Container = styled.div`
@@ -72,230 +73,217 @@ const FiltersContainer = styled.div`
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
-  flex-wrap: wrap;
 `;
 
 const ResultsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 17rem;
 `;
 
-const PropertyCard = styled.div`
-  background: white;
+const NoResultsMessage = styled.p`
+  text-align: center;
+  font-size: 18px;
+  color: #555;
+  padding: 50px;
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
-  &:hover {
-    transform: translateY(-4px);
+  animation: fadeIn 1s ease-in-out;
+
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
   }
 `;
 
-const PropertyImage = styled.img`
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-`;
-
-const PropertyInfo = styled.div`
-  padding: 16px;
-`;
-
-const PropertyName = styled.h3`
-  margin: 0 0 8px 0;
-  font-size: 18px;
-  color: #333;
-`;
-
-const PropertyStats = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 8px;
-  color: #666;
-`;
-
-const PropertyFeatures = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-`;
-
-const Feature = styled.span`
-  background: #e3f2fd;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  color: #2196f3;
-`;
-
 const PropertySearch = () => {
-  const [filters, setFilters] = useState({
-    state: '',
-    city: '',
-    pincode: '',
-    type: '',
-    priceRange: '5000-10000'
-  });
-
-  const [searchResults, setSearchResults] = useState([]);
-  const [sortBy, setSortBy] = useState('');
-  const [bhkFilter, setBhkFilter] = useState('');
-  const [isSearchEnabled, setIsSearchEnabled] = useState(false);
-
-  const priceRanges = [
-    '5000-10000',
-    '10000-15000',
-    '15000-20000',
-    '20000-25000'
-  ];
-
-  useEffect(() => {
-    setIsSearchEnabled(filters.state && filters.city && filters.type);
-  }, [filters]);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    // Simulate API call with dummy data
-    setSearchResults(dummyData);
-  };
-
-  const handleClear = () => {
-    setFilters({
-      state: '',
-      city: '',
-      pincode: '',
-      type: '',
-      priceRange: '5000-10000'
+    const [filters, setFilters] = useState({
+        state: '',
+        city: '',
+        pincode: '',
+        type: '',
+        priceRange: '5000-10000'
     });
-    setSortBy('');
-    setBhkFilter('');
-    setSearchResults([]);
-  };
 
-  const getFilteredAndSortedResults = () => {
-    let results = [...searchResults];
+    const [searchResults, setSearchResults] = useState([]);
+    const [country, setCountry] = useState(null);
+    const [currentState, setCurrentState] = useState(null);
+    const [currentCity, setCurrentCity] = useState(null);
+    const [sortBy, setSortBy] = useState('');
+    const [bhkFilter, setBhkFilter] = useState('');
+    const [isSearchEnabled, setIsSearchEnabled] = useState(false);
+    const [sortByPrice, setSortByPrice] = useState('');
+    const [sortByRating, setSortByRating] = useState('');
 
-    if (bhkFilter && filters.type === 'Flat') {
-      results = results.filter(property => property.bhk === parseInt(bhkFilter));
-    }
+    const priceRanges = [
+        '5000-10000',
+        '10000-15000',
+        '15000-20000',
+        '20000-25000'
+    ];
 
-    if (sortBy === 'price-asc') {
-      results.sort((a, b) => a.cost - b.cost);
-    } else if (sortBy === 'price-desc') {
-      results.sort((a, b) => b.cost - a.cost);
-    }
+    useEffect(() => {
+        setIsSearchEnabled(currentState && currentCity && filters.type);
+    }, [filters]);
 
-    return results;
-  };
+    const handleSearch = async (e) => {
+        e.preventDefault();
+        const { state, city, type, priceRange } = filters;
+        console.log('Searching with filters:', currentState, currentCity, type, priceRange);
+        const query = new URLSearchParams({
+            state: state || currentState.name,
+            city: city || currentCity.name,
+            flatType: type,
+            priceRange
+        }).toString();
 
-  return (
-    <Container>
-      <SearchContainer>
-        <SearchForm onSubmit={handleSearch}>
-          <Select 
-            value={filters.state}
-            onChange={(e) => setFilters({...filters, state: e.target.value})}
-            required
-          >
-            <option value="">Select State</option>
-            <option value="Karnataka">Karnataka</option>
-            <option value="Maharashtra">Maharashtra</option>
-          </Select>
+        try {
+            const response = await fetch(`http://localhost:3000/api/flat/search?${query}`);
+            if (response.ok) {
+                const data = await response.json();
+                setSearchResults(data);
+            } else {
+                console.error('Failed to fetch search results');
+                setSearchResults([]);
+            }
+        } catch (error) {
+            console.error('Error fetching search results:', error);
+            setSearchResults([]);
+        }
+    };
 
-          <Select
-            value={filters.city}
-            onChange={(e) => setFilters({...filters, city: e.target.value})}
-            required
-          >
-            <option value="">Select City</option>
-            <option value="Bangalore">Bangalore</option>
-            <option value="Mumbai">Mumbai</option>
-          </Select>
+    const handleClear = () => {
+        setFilters({
+            state: '',
+            city: '',
+            pincode: '',
+            type: '',
+            priceRange: '5000-10000'
+        });
+        setSortBy('');
+        setBhkFilter('');
+        setSearchResults([]);
+    };
 
-          <Input
-            placeholder="Pincode (optional)"
-            value={filters.pincode}
-            onChange={(e) => setFilters({...filters, pincode: e.target.value})}
-          />
+    const getFilteredAndSortedResults = () => {
+        let results = [...searchResults];
 
-          <Select
-            value={filters.type}
-            onChange={(e) => setFilters({...filters, type: e.target.value})}
-            required
-          >
-            <option value="">Select Type</option>
-            <option value="Flat">Flat</option>
-            <option value="PG">PG</option>
-            <option value="Hostel">Hostel</option>
-          </Select>
+        if (bhkFilter && filters.type === 'Flat') {
+            results = results.filter(property => property.bhk === parseInt(bhkFilter));
+        }
 
-          <Select
-            value={filters.priceRange}
-            onChange={(e) => setFilters({...filters, priceRange: e.target.value})}
-          >
-            {priceRanges.map(range => (
-              <option key={range} value={range}>₹{range}</option>
-            ))}
-          </Select>
+        if (sortByPrice === 'price-asc') {
+            results.sort((a, b) => a.cost - b.cost);
+        } else if (sortByPrice === 'price-desc') {
+            results.sort((a, b) => b.cost - a.cost);
+        }
 
-          <Button type="submit" disabled={!isSearchEnabled}>
-            <FaSearch /> Search
-          </Button>
+        if (sortByRating === 'rating-asc') {
+            results.sort((a, b) => a.rating - b.rating);
+        } else if (sortByRating === 'rating-desc') {
+            results.sort((a, b) => b.rating - a.rating);
+        }
 
-          <Button type="button" variant="clear" onClick={handleClear}>
-            <MdClear /> Clear
-          </Button>
-        </SearchForm>
-      </SearchContainer>
+        return results;
+    };
 
-      {searchResults.length > 0 && (
-        <FiltersContainer>
-          <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="">Sort by Price</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-          </Select>
+    return (
+        <Container>
+            <SearchContainer>
+                <SearchForm onSubmit={handleSearch}>
+                    <StateSelect
+                        countryid={101}
+                        containerClassName="form-group"
+                        inputClassName=""
+                        onChange={(_state) => setCurrentState(_state)}
+                        onTextChange={(_txt) => console.log(_txt)}
+                        defaultValue={currentState}
+                        placeHolder="Select State"
+                    />
+                    <CitySelect
+                        countryid={101}
+                        stateid={currentState?.id}
+                        containerClassName="form-group"
+                        inputClassName=""
+                        onChange={(_city) => setCurrentCity(_city)}
+                        onTextChange={(_txt) => console.log(_txt)}
+                        defaultValue={currentCity}
+                        placeHolder="Select City"
+                    />
 
-          {filters.type === 'Flat' && (
-            <Select value={bhkFilter} onChange={(e) => setBhkFilter(e.target.value)}>
-              <option value="">Select BHK</option>
-              <option value="1">1 BHK</option>
-              <option value="2">2 BHK</option>
-              <option value="3">3 BHK</option>
-            </Select>
-          )}
-        </FiltersContainer>
-      )}
+                    <Input
+                        placeholder="Pincode (optional)"
+                        value={filters.pincode}
+                        onChange={(e) => setFilters({ ...filters, pincode: e.target.value })}
+                    />
 
-      <ResultsGrid>
-        {getFilteredAndSortedResults().map(property => (
-          <PropertyCard key={property.id}>
-            <PropertyImage src={property.images[0]} alt={property.name} />
-            <PropertyInfo>
-              <PropertyName>{property.name}</PropertyName>
-              <PropertyStats>
-                <span><FaRupeeSign />{property.cost}/month</span>
-                {property.type === 'Flat' && <span><FaBed />{property.bhk} BHK</span>}
-                <span><FaUsers />{property.availableRooms} available</span>
-              </PropertyStats>
-              <PropertyStats>
-                <span><FaStar style={{color: '#ffc107'}} />{property.rating}</span>
-                <span><FaMapMarkerAlt />{property.city}, {property.state}</span>
-              </PropertyStats>
-              <PropertyFeatures>
-                {property.features.map(feature => (
-                  <Feature key={feature}>{feature}</Feature>
-                ))}
-              </PropertyFeatures>
-            </PropertyInfo>
-          </PropertyCard>
-        ))}
-      </ResultsGrid>
-    </Container>
-  );
+                    <Select
+                        value={filters.type}
+                        onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+                        required
+                    >
+                        <option value="">Select Type</option>
+                        <option value="Flat">Flat</option>
+                        <option value="PG">PG</option>
+                        <option value="Hostel">Hostel</option>
+                    </Select>
+
+                    <Select
+                        value={filters.priceRange}
+                        onChange={(e) => setFilters({ ...filters, priceRange: e.target.value })}
+                    >
+                        {priceRanges.map(range => (
+                            <option key={range} value={range}>₹{range}</option>
+                        ))}
+                    </Select>
+
+                    <Button type="submit" disabled={!isSearchEnabled}>
+                        <FaSearch /> Search
+                    </Button>
+
+                    <Button type="button" variant="clear" onClick={handleClear}>
+                        <MdClear /> Clear
+                    </Button>
+                </SearchForm>
+            </SearchContainer>
+
+            {searchResults.length > 0 && (
+                <FiltersContainer>
+                    <Select value={sortByPrice} onChange={(e) => setSortByPrice(e.target.value)}>
+                        <option value="">Sort by Price</option>
+                        <option value="price-asc">Price: Low to High</option>
+                        <option value="price-desc">Price: High to Low</option>
+                    </Select>
+
+                    <Select value={sortByRating} onChange={(e) => setSortByRating(e.target.value)}>
+                        <option value="">Sort by Rating</option>
+                        <option value="rating-asc">Rating: Low to High</option>
+                        <option value="rating-desc">Rating: High to Low</option>
+                    </Select>
+
+                    {filters.type === 'Flat' && (
+                        <Select value={bhkFilter} onChange={(e) => setBhkFilter(e.target.value)}>
+                            <option value="">Select BHK</option>
+                            <option value="1">1 BHK</option>
+                            <option value="2">2 BHK</option>
+                            <option value="3">3 BHK</option>
+                        </Select>
+                    )}
+                </FiltersContainer>
+            )}
+
+
+            <ResultsGrid>
+                {searchResults.length > 0 ? (
+                    getFilteredAndSortedResults().map(property => (
+                        <PropertyCardSearch key={property.id} property={property} />
+                    ))
+                ) : (
+                    <NoResultsMessage>No {filters.type} found</NoResultsMessage>
+                )}
+            </ResultsGrid>
+        </Container>
+    );
 };
 
 export default PropertySearch;

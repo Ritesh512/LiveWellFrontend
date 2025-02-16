@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection = styled.section`
   position: relative;
@@ -47,6 +48,17 @@ const SearchButton = styled.button`
 `;
 
 const Hero = () => {
+  const navigate = useNavigate();
+
+  const handleSearchClick = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user) {
+      navigate('/property-search');
+    } else {
+      navigate('/login');
+    }
+  };
+
   return (
     <HeroSection>
       <HeroContent>
@@ -56,7 +68,7 @@ const Hero = () => {
           <SearchInput type="text" placeholder="Location" />
           <SearchInput type="text" placeholder="Type" />
           <SearchInput type="text" placeholder="Price Range" />
-          <SearchButton>Search</SearchButton>
+          <SearchButton onClick={handleSearchClick}>Search</SearchButton>
         </SearchContainer>
       </HeroContent>
     </HeroSection>

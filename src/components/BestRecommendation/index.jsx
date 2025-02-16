@@ -118,7 +118,7 @@ const properties = {
       },
       {
         id: 2,
-        image: '/assets/twin-room.jpg',
+        image: '/assets/luxury-room.jpg',
         title: 'Twin Bedded Room',
         location: 'Green Park, Jakarta',
         price: '$800/month',

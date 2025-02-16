@@ -8,6 +8,12 @@ const Card = styled.div`
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   width: 100%;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  }
 `;
 
 const ImageContainer = styled.div`
