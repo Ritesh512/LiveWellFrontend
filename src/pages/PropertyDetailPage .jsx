@@ -892,7 +892,7 @@ const PropertyDetailPage = () => {
 
           <ReviewSection>
             <ReviewHeader>
-              <h2>Guest Reviews</h2>
+              <h2>Guest Reviews </h2>
               {userId !== property?.ownerId && (
                 <WriteReviewButton onClick={() => setIsReviewFormOpen(true)}>
                   Write a Review
