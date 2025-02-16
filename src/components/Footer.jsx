@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from 'react-icons/fa';
 
 const FooterContainer = styled.footer`
   background: #f8f9fa;
@@ -82,6 +83,22 @@ const SocialLinks = styled.div`
   }
 `;
 
+const FacebookIcon = styled(FaFacebookF)`
+  color: #3b5998;
+`;
+
+const TwitterIcon = styled(FaTwitter)`
+  color: #1da1f2;
+`;
+
+const InstagramIcon = styled(FaInstagram)`
+  color: #e1306c;
+`;
+
+const LinkedinIcon = styled(FaLinkedinIn)`
+  color: #0077b5;
+`;
+
 const Copyright = styled.div`
   text-align: center;
   padding-top: 2rem;
@@ -97,10 +114,10 @@ const Footer = () => {
           <h3>RentBro.</h3>
           <p>Find your perfect rental space with our comprehensive property listings. Expert support and hassle-free management. Our mission is to make your rental journey seamless.</p>
           <SocialLinks>
-            <a href="#"><i className="fab fa-facebook-f"></i></a>
-            <a href="#"><i className="fab fa-twitter"></i></a>
-            <a href="#"><i className="fab fa-instagram"></i></a>
-            <a href="#"><i className="fab fa-linkedin-in"></i></a>
+            <a href="#"><FacebookIcon /></a>
+            <a href="#"><TwitterIcon /></a>
+            <a href="#"><InstagramIcon /></a>
+            <a href="#"><LinkedinIcon /></a>
           </SocialLinks>
         </CompanyInfo>
         

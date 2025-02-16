@@ -1,111 +1,175 @@
 import React from 'react';
-import styled from 'styled-components';
-import { useState, useEffect } from 'react';
+import styled, { keyframes } from 'styled-components';
 
-const ReviewSection = styled.section`
-  padding: 4rem 5%;
+const Container = styled.section`
+  padding: 4rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
 `;
 
 const Title = styled.h2`
-  margin-bottom: 2rem;
+  font-size: 2rem;
+  font-weight: 600;
   text-align: center;
+  margin-bottom: 3rem;
+  
+  &::after {
+    content: '';
+    display: block;
+    width: 180px;
+    height: 2px;
+    background: #0066ff;
+    margin: 0.5rem auto;
+  }
 `;
 
-const ReviewsCarousel = styled.div`
+const scroll = keyframes`
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+`;
+
+const CarouselTrack = styled.div`
   display: flex;
   gap: 2rem;
-  overflow-x: hidden;
+  animation: ${scroll} 30s linear infinite;
+  &:hover {
+    animation-play-state: paused;
+  }
+`;
+
+const CarouselContainer = styled.div`
+  overflow: hidden;
+  position: relative;
   padding: 1rem;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 100px;
+    height: 100%;
+    z-index: 2;
+  }
+
+  &::before {
+    left: 0;
+    background: linear-gradient(to right, white, transparent);
+  }
+
+  &::after {
+    right: 0;
+    background: linear-gradient(to left, white, transparent);
+  }
 `;
 
 const ReviewCard = styled.div`
-  flex: 0 0 300px;
   background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: transform 0.3s;
-  
-  &:hover {
-    transform: translateY(-5px);
-  }
+  border-radius: 20px;
+  padding: 2rem;
+  min-width: 300px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e8f4ff;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 `;
 
-const ReviewHeader = styled.div`
+const Avatar = styled.div`
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  background: ${props => props.$bgColor || '#ffebee'};
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  justify-content: center;
+`;
+
+const AvatarImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const ReviewerName = styled.h3`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+`;
+
+const ReviewText = styled.p`
+  color: #666;
+  line-height: 1.6;
+  font-style: italic;
   
-  img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
+  &::before {
+    content: '"';
+    font-size: 2rem;
+    color: #ddd;
+    line-height: 0;
+    margin-right: 0.5rem;
   }
 `;
 
-const Rating = styled.div`
-  color: #FFD700;
-  margin-bottom: 0.5rem;
-`;
-
-const RenterReview = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  
+const RentersReview = () => {
   const reviews = [
     {
-      name: "Sarah Johnson",
-      image: "/assets/reviewer-1.jpg",
-      rating: 5,
-      review: "Amazing experience with LiveWell! Found my perfect apartment within days."
+      id: 1,
+      name: 'Riya',
+      image: '/assets/reviewer-1.jpg',
+      bgColor: '#ffebee',
+      text: 'LiveWell made finding a reliable place effortless, and the seamless booking process saved me so much time. It\'s truly a game-changer!'
     },
     {
-      name: "Mike Chen",
-      image: "/assets/reviewer-2.jpg",
-      rating: 5,
-      review: "The team was incredibly helpful and responsive throughout the process."
+      id: 2,
+      name: 'Vikram',
+      image: '/assets/reviewer-2.jpg',
+      bgColor: '#e3f2fd',
+      text: 'I loved how easy it was to manage rent and visitor check-ins with LiveWell. It\'s the most convenient rental experience I\'ve had!'
     },
     {
-      name: "Emma Davis",
-      image: "/assets/reviewer-3.jpg",
-      rating: 5,
-      review: "Best rental platform I've used. Very transparent and professional."
+      id: 3,
+      name: 'Rima',
+      image: '/assets/reviewer-3.jpg',
+      bgColor: '#f3e5f5',
+      text: 'LiveWell\'s interface is fantastic—simple, fast, and reliable. It\'s my go-to for finding quality places and a worry-free experience!'
     },
     {
-      name: "John Smith",
-      image: "/assets/reviewer-4.jpg",
-      rating: 5,
-      review: "Seamless experience from start to finish. Highly recommended!"
+      id: 4,
+      name: 'Ashish',
+      image: '/assets/reviewer-4.jpg',
+      bgColor: '#fff3e0',
+      text: 'The platform is intuitive, and the secure verification features made me feel safe. LiveWell is perfect for hassle-free stays!'
     }
   ];
-  
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % reviews.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
+
+  // Double the reviews array to create seamless infinite scroll
+  const doubledReviews = [...reviews, ...reviews];
 
   return (
-    <ReviewSection>
+    <Container>
       <Title>Renter's Review</Title>
-      <ReviewsCarousel style={{ transform: `translateX(-${currentSlide * 320}px)` }}>
-        {reviews.map((review, index) => (
-          <ReviewCard key={index}>
-            <ReviewHeader>
-              <img src={review.image} alt={review.name} />
-              <div>
-                <h4>{review.name}</h4>
-                <Rating>{"⭐".repeat(review.rating)}</Rating>
-              </div>
-            </ReviewHeader>
-            <p>{review.review}</p>
-          </ReviewCard>
-        ))}
-      </ReviewsCarousel>
-    </ReviewSection>
+      <CarouselContainer>
+        <CarouselTrack>
+          {doubledReviews.map((review, index) => (
+            <ReviewCard key={`${review.id}-${index}`}>
+              <Avatar $bgColor={review.bgColor}>
+                <AvatarImage src={review.image} alt={review.name} />
+              </Avatar>
+              <ReviewerName>{review.name}</ReviewerName>
+              <ReviewText>{review.text}</ReviewText>
+            </ReviewCard>
+          ))}
+        </CarouselTrack>
+      </CarouselContainer>
+    </Container>
   );
 };
 
-export default RenterReview;
+export default RentersReview;

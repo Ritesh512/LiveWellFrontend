@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const Nav = styled.nav`
@@ -51,21 +51,45 @@ const Button = styled.button`
     background: #4B9CE2;
     color: white;
   }
+  
+  &.logout {
+    background: #e74c3c;
+    color: white;
+  }
 `;
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user'));
+  const userId = user ? user._id : null;
+  const role = user?.role || 'user';
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/');
+  };
+
   return (
     <Nav>
       <Logo to="/">LiveWell</Logo>
       <NavLinks>
-        <NavLink to="/property">Property</NavLink>
-        <NavLink to="/pricing">Pricing</NavLink>
+        <NavLink to="/property-search">Property</NavLink>
+        {/* <NavLink to="/pricing">Pricing</NavLink> */}
+        {token && <NavLink to={`/profile/${userId}`}>Profile</NavLink>}
+        {token && role === 'owner' && <NavLink to="/addFlat">Add Flat</NavLink>}
         <NavLink to="/about">About</NavLink>
         <NavLink to="/contact">Contact</NavLink>
       </NavLinks>
       <AuthButtons>
-        <Button className="login">Sign In</Button>
-        <Button className="signup">Login</Button>
+        {token ? (
+          <Button className="logout" onClick={handleLogout}>Logout</Button>
+        ) : (
+          <>
+            <Button className="login" onClick={() => navigate('/signup')}>Sign Up</Button>
+            <Button className="signup" onClick={() => navigate('/login')}>Login</Button>
+          </>
+        )}
       </AuthButtons>
     </Nav>
   );
