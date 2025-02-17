@@ -887,10 +887,9 @@ const PropertyDetailPage = () => {
 
       if (response.ok) {
         toast.success('Review deleted successfully!');
-        fetchReviews(); // Refresh the reviews list
-        fetchPropertyDetails(); // Refresh the property details
+        window.location.reload();
       } else {
-        toast.error('Failed to delete review');
+        toast.warn('Failed to delete review');
       }
     } catch (error) {
       console.error('Error deleting review:', error);
