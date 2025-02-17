@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { FaWifi, FaSwimmingPool, FaUtensils, FaDumbbell, FaHome, FaParking } from 'react-icons/fa';
+import { MdOutlineCleaningServices } from 'react-icons/md';
+import { FaKitchenSet } from "react-icons/fa6";
+import { ImPowerCord } from 'react-icons/im';
 
 
 
@@ -150,6 +154,29 @@ const FeatureTag = styled.div`
   }
 `;
 
+const AvailableFeaturesContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+`;
+
+const AvailableFeatureTag = styled.div`
+  background-color: #ddd;
+  color: #333;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #ccc;
+  }
+`;
+
 const AddFlat = () => {
     const navigate = useNavigate();
     const ownerId = JSON.parse(localStorage.getItem('user'))._id;
@@ -193,6 +220,34 @@ const AddFlat = () => {
 
     const [featureInput, setFeatureInput] = useState('');
 
+    const getFeatureIcon = (feature) => {
+        switch (feature.toLowerCase()) {
+            case 'wifi': return <FaWifi size={20} />;
+            case 'swimming pool': return <FaSwimmingPool size={20} />;
+            case 'restaurant': return <FaUtensils size={20} />;
+            case 'gym': return <FaDumbbell size={20} />;
+            case 'furnished room': return <FaHome size={20} />;
+            case 'kitchen and cooking': return <FaKitchenSet size={20} />;
+            case 'parking': return <FaParking size={20} />;
+            case 'housekeeping and cleaning': return <MdOutlineCleaningServices size={20} />;
+            case 'power backup': return <ImPowerCord size={20} />;
+            default: return null;
+        }
+    };
+
+    const availableFeatures = [
+        'WiFi', 'Swimming Pool', 'Restaurant', 'Gym', 'Furnished Room', 'Kitchen and Cooking', 'Parking', 'Housekeeping and Cleaning', 'Power Backup'
+    ];
+
+    const addFeature = (feature) => {
+        if (!formData.features.includes(feature)) {
+            setFormData(prev => ({
+                ...prev,
+                features: [...prev.features, feature]
+            }));
+        }
+    };
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
@@ -233,7 +288,7 @@ const AddFlat = () => {
             if (response.ok) {
                 const data = await response.json();
                 toast.success('Property added successfully!');
-                navigate(`/upload/flat/${data._id}`);
+                navigate(`/upload/flat/${data.flat._id}`);
             } else {
                 toast.error('Failed to add property');
             }
@@ -420,6 +475,14 @@ const AddFlat = () => {
                             ))}
                         </FeatureTagsContainer>
                     </FormGroup>
+                    <AvailableFeaturesContainer>
+                        {availableFeatures.map((feature, index) => (
+                            <AvailableFeatureTag key={index} onClick={() => addFeature(feature)}>
+                                {getFeatureIcon(feature)}
+                                {feature}
+                            </AvailableFeatureTag>
+                        ))}
+                    </AvailableFeaturesContainer>
                 </Section>
 
                 <Section>
@@ -441,7 +504,7 @@ const AddFlat = () => {
                             <Label>
                                 <Checkbox
                                     type="checkbox"
-                                    name="isAC"
+                                    name="isForGirls"
                                     checked={formData.isForGirls}
                                     onChange={handleChange}
                                 />

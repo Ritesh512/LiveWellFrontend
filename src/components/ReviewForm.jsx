@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { Rating } from 'react-simple-star-rating'
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -76,7 +77,7 @@ const SubmitButton = styled.button`
 
 const ReviewForm = ({ isOpen, onClose, onSubmit }) => {
   const [userName, setUserName] = useState('');
-  const [rating, setRating] = useState('');
+  const [rating, setRating] = useState(0);
   const [context, setComment] = useState('');
 
   const handleSubmit = (e) => {
@@ -84,6 +85,10 @@ const ReviewForm = ({ isOpen, onClose, onSubmit }) => {
     onSubmit({ userName, rating, context });
     console.log({ userName, rating, context });
     onClose();
+  };
+
+  const handleRating = (newRating) => {
+    setRating(newRating);
   };
 
   if (!isOpen) return null;
@@ -103,14 +108,13 @@ const ReviewForm = ({ isOpen, onClose, onSubmit }) => {
             onChange={(e) => setUserName(e.target.value)}
             required
           />
-          <Input
-            type="number"
-            placeholder="Rating (1-5)"
+          <h3>Rate Us:</h3>
+          <Rating
+            count={5}
+            size={24}
+            activeColor="#ffd700"
             value={rating}
-            onChange={(e) => setRating(e.target.value)}
-            required
-            min="1"
-            max="5"
+            onClick={handleRating}
           />
           <TextArea
             placeholder="Your Review"
