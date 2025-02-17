@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { Star, MapPin, Clock, Check, Camera, PlayCircle } from 'lucide-react';
-import { FaStar, FaMapMarkerAlt, FaClock, FaCheck, FaTimes, FaWifi, FaSwimmingPool, FaUtensils, FaDumbbell } from 'react-icons/fa';
-import { MdOutlineEdit } from "react-icons/md";
+import { FaStar, FaMapMarkerAlt, FaClock, FaParking, FaCheck, FaTimes, FaWifi, FaSwimmingPool, FaUtensils, FaDumbbell, FaTrash, FaHome } from 'react-icons/fa';
+import { MdOutlineEdit, MdOutlineCleaningServices } from "react-icons/md";
+import { FaKitchenSet } from "react-icons/fa6";
+import { ImPowerCord } from "react-icons/im";
 import PropertyGalleryModal from '../ui/PropertyGalleryModal';
 import ReviewForm from '../components/ReviewForm';
 import axios from 'axios';
@@ -379,12 +381,62 @@ const SaleTag = styled.div`
   display: inline-block;
 `;
 
+const ConfirmationOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const ConfirmationContainer = styled.div`
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+  text-align: center;
+`;
+
+const ConfirmationTitle = styled.h2`
+  margin-bottom: 16px;
+`;
+
+const ConfirmationButtons = styled.div`
+  display: flex;
+  justify-content: space-around;
+  margin-top: 24px;
+`;
+
+const ConfirmationButton = styled.button`
+  background: ${props => props.cancel ? '#ccc' : '#e53935'};
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: ${props => props.cancel ? '#bbb' : '#d32f2f'};
+  }
+`;
+
 const getFeatureIcon = (feature) => {
   switch (feature.toLowerCase()) {
     case 'wifi': return <FaWifi size={20} />;
-    case 'pool': return <FaSwimmingPool size={20} />;
+    case 'swimming pool': return <FaSwimmingPool size={20} />;
     case 'restaurant': return <FaUtensils size={20} />;
     case 'gym': return <FaDumbbell size={20} />;
+    case 'furnished room': return <FaHome size={20} />;
+    case 'kitchen and cooking': return <FaKitchenSet size={20} />;
+    case 'parking': return <FaParking size={20} />;
+    case 'housekeeping and cleaning': return <MdOutlineCleaningServices size={20} />;
+    case 'power backup': return <ImPowerCord size={20} />;
     default: return <FaCheck size={20} />;
   }
 };
@@ -488,7 +540,9 @@ const PropertyDetailPage = () => {
   const [reviews, setReviews] = useState([]);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const navigate = useNavigate();
+
 
   const showRoomDetails = property?.type === 'Flat';
   const showRoomSharing = ['Hostel', 'PG'].includes(property?.type);
@@ -496,6 +550,31 @@ const PropertyDetailPage = () => {
   const role = JSON.parse(localStorage.getItem('user')).role;
   const email = JSON.parse(localStorage.getItem('user')).email;
 
+  const handleDeleteFlat = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/flat/delete/${flatId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        toast.success('Flat deleted successfully!');
+        navigate(`/profile/${userId}`); // Redirect to home page or another appropriate page
+      } else {
+        toast.error('Failed to delete flat');
+      }
+    } catch (error) {
+      console.error('Error deleting flat:', error);
+      toast.error('Error deleting flat');
+    }
+  };
+
+  const confirmDeleteFlat = () => {
+    console.log("clicking confirm")
+    setIsConfirmationOpen(true);
+  };
 
   const fetchReviews = async () => {
     try {
@@ -536,11 +615,11 @@ const PropertyDetailPage = () => {
         },
         body: JSON.stringify(bookingData)
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to add booking');
       }
-  
+
       const data = await response.json();
       console.log('Booking added:', data);
       toast.success('Booking added successfully!');
@@ -797,6 +876,28 @@ const PropertyDetailPage = () => {
     );
   };
 
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/people/feedback/${reviewId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        toast.success('Review deleted successfully!');
+        fetchReviews(); // Refresh the reviews list
+        fetchPropertyDetails(); // Refresh the property details
+      } else {
+        toast.error('Failed to delete review');
+      }
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      toast.error('Error deleting review');
+    }
+  };
+
   return (
     <PageContainer>
       <Header>
@@ -804,10 +905,18 @@ const PropertyDetailPage = () => {
           <PropertyName>
             {property?.name}
             <PropertyTypeTag>{property?.type}</PropertyTypeTag>
-            { role==='owner' && <MdOutlineEdit
-              style={{ cursor: 'pointer' }}
-              onClick={() => navigate(`/flat/update/${flatId}`)}
-            />}
+            {role === 'owner' && userId === property?.ownerId && (
+              <>
+                <MdOutlineEdit
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => navigate(`/flat/update/${flatId}`)}
+                />
+                <FaTrash
+                  style={{ cursor: 'pointer', marginLeft: '8px' }}
+                  onClick={confirmDeleteFlat}
+                />
+              </>
+            )}
           </PropertyName>
           <Stars>
             {[1, 2, 3, 4, 5].map((star) => (
@@ -822,7 +931,7 @@ const PropertyDetailPage = () => {
 
         <RatingSection>
           <RatingBox>
-            <RatingScore>{property?.rating}</RatingScore>
+            <RatingScore>{Math.floor(property?.rating) / 5}</RatingScore>
             <RatingText>{property?.totalRating}+ ratings</RatingText>
           </RatingBox>
         </RatingSection>
@@ -872,11 +981,11 @@ const PropertyDetailPage = () => {
               </DetailItem>
               <DetailItem>
                 <Clock size={16} />
-                Check-in: {property?.checkInTime}
+                Morning Timing: {property?.checkInTime}
               </DetailItem>
               <DetailItem>
                 <Clock size={16} />
-                Check-out: {property?.checkOutTime}
+                Evening Timing: {property?.checkOutTime}
               </DetailItem>
             </RoomDetails>
 
@@ -902,6 +1011,12 @@ const PropertyDetailPage = () => {
 
             {reviews.map((review) => (
               <ReviewCard key={review._id}>
+                {review.userId === userId && (
+                  <FaTrash
+                    style={{ cursor: 'pointer', float: 'right' }}
+                    onClick={() => handleDeleteReview(review._id)}
+                  />
+                )}
                 <ReviewUser>
                   <UserAvatar>
                     <AvatarImage src={review.photoUrl} alt={review.userName} />
@@ -941,6 +1056,19 @@ const PropertyDetailPage = () => {
         flatId={property?._id}
         ownerId={property?.ownerId}
       />
+
+      {isConfirmationOpen && (
+        <ConfirmationOverlay>
+          <ConfirmationContainer>
+            <ConfirmationTitle>Are you sure you want to delete this flat?</ConfirmationTitle>
+            <ConfirmationButtons>
+              <ConfirmationButton cancel onClick={() => setIsConfirmationOpen(false)}>Cancel</ConfirmationButton>
+              <ConfirmationButton onClick={handleDeleteFlat}>Delete</ConfirmationButton>
+            </ConfirmationButtons>
+          </ConfirmationContainer>
+        </ConfirmationOverlay>
+      )}
+
     </PageContainer>
   );
 };

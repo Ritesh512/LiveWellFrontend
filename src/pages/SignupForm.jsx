@@ -137,6 +137,7 @@ const SignupForm = () => {
     phone: '',
     aadharCard: '',
     role: 'user',
+    gender:'male',
     password: ''
   });
 
@@ -294,6 +295,18 @@ const SignupForm = () => {
               onChange={handleChange}
               placeholder="Enter 12-digit Aadhar number"
             />
+          </InputGroup>
+
+          <InputGroup>
+            <Label>Gender</Label>
+            <Select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+            >
+              <option value="user">Male</option>
+              <option value="owner">Female</option>
+            </Select>
           </InputGroup>
 
           <InputGroup>

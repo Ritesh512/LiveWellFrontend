@@ -114,23 +114,23 @@ const Footer = () => {
           <h3>RentBro.</h3>
           <p>Find your perfect rental space with our comprehensive property listings. Expert support and hassle-free management. Our mission is to make your rental journey seamless.</p>
           <SocialLinks>
-            <a href="#"><FacebookIcon /></a>
-            <a href="#"><TwitterIcon /></a>
-            <a href="#"><InstagramIcon /></a>
-            <a href="#"><LinkedinIcon /></a>
+            <a href="https://x.com/DipaliGavande?s=08" target="_blank" rel="noopener noreferrer"><FacebookIcon /></a>
+            <a href="https://x.com/DipaliGavande?s=08" target="_blank" rel="noopener noreferrer"><TwitterIcon /></a>
+            <a href="https://www.instagram.com/queen_dipa_?igsh=MWd5c2tkMzhybXk3eg==" target="_blank" rel="noopener noreferrer"><InstagramIcon /></a>
+            <a href="https://www.linkedin.com/company/dablim-solu%C3%A7%C3%B5es-gr%C3%A1ficas/" target="_blank" rel="noopener noreferrer"><LinkedinIcon /></a>
           </SocialLinks>
         </CompanyInfo>
-        
+
         <FooterSection>
           <h3>Property</h3>
           <ul>
-            <li>House</li>
+            <li>Hostel</li>
             <li>Flat</li>
             <li>Apartment</li>
-            <li>Villa</li>
+            <li>PG's</li>
           </ul>
         </FooterSection>
-        
+
         <FooterSection>
           <h3>Service</h3>
           <ul>
@@ -140,7 +140,7 @@ const Footer = () => {
             <li>Support Center</li>
           </ul>
         </FooterSection>
-        
+
         <FooterSection>
           <h3>Newsletter</h3>
           <p>Subscribe to get the latest news and updates.</p>
@@ -150,7 +150,7 @@ const Footer = () => {
           </Newsletter>
         </FooterSection>
       </FooterContent>
-      
+
       <Copyright>
         © 2024 | All Rights Reserved By LiveWell
       </Copyright>
