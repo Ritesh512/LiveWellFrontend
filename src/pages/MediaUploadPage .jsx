@@ -131,6 +131,7 @@ const SuccessMessage = styled.div`
 const MediaUploadPage = () => {
     const [images, setImages] = useState([]);
     const [video, setVideo] = useState(null);
+    const [panoramicImages, setPanoramicImages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -174,12 +175,41 @@ const MediaUploadPage = () => {
         setError('');
     };
 
+    const handlePanoramicImageChange = (e) => {
+        const files = Array.from(e.target.files);
+
+        if (files.length > 5) {
+            setError('You can only upload up to 5 panoramic images at a time');
+            return;
+        }
+
+        const imageFiles = files.filter(file => file.type.startsWith('image/'));
+        if (imageFiles.length !== files.length) {
+            setError('Please select only image files');
+            return;
+        }
+
+        setPanoramicImages(prevImages => {
+            const newImages = [...prevImages, ...files];
+            if (newImages.length > 5) {
+                setError('Maximum 5 panoramic images allowed');
+                return prevImages;
+            }
+            setError('');
+            return newImages;
+        });
+    };
+
     const removeImage = (index) => {
         setImages(prevImages => prevImages.filter((_, i) => i !== index));
     };
 
     const removeVideo = () => {
         setVideo(null);
+    };
+
+    const removePanoramicImage = (index) => {
+        setPanoramicImages(prevImages => prevImages.filter((_, i) => i !== index));
     };
 
     const handleUpload = async () => {
@@ -205,6 +235,25 @@ const MediaUploadPage = () => {
                 }
 
                 setSuccess('Images uploaded successfully!');
+            }
+
+            // Upload panoramic images
+            if (panoramicImages.length > 0) {
+                const panoramicImageFormData = new FormData();
+                panoramicImages.forEach(image => {
+                    panoramicImageFormData.append('paranomicImages', image);
+                });
+
+                const panoramicImageResponse = await fetch(`http://localhost:3000/api/flats/upload/panoramicImages/${flatId}`, {
+                    method: 'POST',
+                    body: panoramicImageFormData,
+                });
+
+                if (!panoramicImageResponse.ok) {
+                    throw new Error('Failed to upload panoramic images');
+                }
+
+                setSuccess(prev => (prev ? prev + ' Panoramic images uploaded successfully!' : 'Panoramic images uploaded successfully!'));
             }
 
             // Upload video
@@ -259,6 +308,29 @@ const MediaUploadPage = () => {
             </UploadSection>
 
             <UploadSection>
+                <Title>Upload Panoramic Images (Max 5)</Title>
+                <DropZone as="label" htmlFor="panoramic-image-upload">
+                    <input
+                        id="panoramic-image-upload"
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handlePanoramicImageChange}
+                        style={{ display: 'none' }}
+                    />
+                    <p>Click or drag panoramic images here</p>
+                </DropZone>
+                <PreviewContainer>
+                    {panoramicImages.map((image, index) => (
+                        <PreviewItem key={index}>
+                            <PreviewImage src={URL.createObjectURL(image)} alt={`Preview ${index}`} />
+                            <RemoveButton onClick={() => removePanoramicImage(index)}>×</RemoveButton>
+                        </PreviewItem>
+                    ))}
+                </PreviewContainer>
+            </UploadSection>
+
+            <UploadSection>
                 <Title>Upload Video (Max 1)</Title>
                 <DropZone as="label" htmlFor="video-upload">
                     <input
@@ -273,7 +345,10 @@ const MediaUploadPage = () => {
                 {video && (
                     <PreviewContainer>
                         <PreviewItem>
-                            <p>{video.name}</p>
+                            <video width="100%" height="100%" controls>
+                                <source src={URL.createObjectURL(video)} type={video.type} />
+                                Your browser does not support the video tag.
+                            </video>
                             <RemoveButton onClick={removeVideo}>×</RemoveButton>
                         </PreviewItem>
                     </PreviewContainer>
@@ -285,7 +360,7 @@ const MediaUploadPage = () => {
 
             <UploadButton
                 onClick={handleUpload}
-                disabled={loading || (images.length === 0 && !video)}
+                disabled={loading || (images.length === 0 && !video && panoramicImages.length === 0)}
             >
                 {loading ? <Spinner /> : 'Upload Media'}
             </UploadButton>

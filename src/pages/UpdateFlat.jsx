@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { FaWifi, FaSwimmingPool, FaUtensils, FaDumbbell, FaHome, FaParking } from 'react-icons/fa';
+import { MdOutlineCleaningServices } from 'react-icons/md';
+import { FaKitchenSet } from "react-icons/fa6";
+import { ImPowerCord } from 'react-icons/im';
 
 const Container = styled.div`
   max-width: 1200px;
@@ -210,12 +214,63 @@ const DeleteButton = styled.button`
   }
 `;
 
+const AvailableFeaturesContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+`;
+
+const AvailableFeatureTag = styled.div`
+  background-color: #ddd;
+  color: #333;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #ccc;
+  }
+`;
+
+const getFeatureIcon = (feature) => {
+    switch (feature.toLowerCase()) {
+        case 'wifi': return <FaWifi size={20} />;
+        case 'swimming pool': return <FaSwimmingPool size={20} />;
+        case 'restaurant': return <FaUtensils size={20} />;
+        case 'gym': return <FaDumbbell size={20} />;
+        case 'furnished room': return <FaHome size={20} />;
+        case 'kitchen and cooking': return <FaKitchenSet size={20} />;
+        case 'parking': return <FaParking size={20} />;
+        case 'housekeeping and cleaning': return <MdOutlineCleaningServices size={20} />;
+        case 'power backup': return <ImPowerCord size={20} />;
+        default: return null;
+    }
+};
+
 const UpdateFlat = () => {
     const { flatId } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [featureInput, setFeatureInput] = useState('');
-    
+    const [latitude, setLatitude] = useState();
+    const [longitude, setLongitude] = useState();
+
+    useEffect(() => {
+        if (location.state) {
+            setLatitude(location.state.latitude);
+            setLongitude(location.state.longitude);
+        }
+    }, [location.state]);
+
+    const availableFeatures = [
+        'WiFi', 'Swimming Pool', 'Restaurant', 'Gym', 'Furnished Room', 'Kitchen and Cooking', 'Parking', 'Housekeeping and Cleaning', 'Power Backup'
+    ];
+
     const [formData, setFormData] = useState({
         type: '',
         name: '',
@@ -239,21 +294,33 @@ const UpdateFlat = () => {
         capacity: 0,
         features: [],
         images: [],
+        paranomicImages: [],
         videos: [],
         street: '',
+        nearby: '',
         city: '',
         state: '',
         zipCode: '',
         country: '',
         isOnSale: false,
         Saleit: false,
-        checkInTime: '',
-        checkOutTime: '',
-        taxes: 0
+        checkInTime: '11:00 Am',
+        checkOutTime: '9:00 Pm',
+        taxes: 0,
+        location: {
+            type: 'Point',
+            coordinates: [latitude, longitude]
+        },
+        totalCost:0,
     });
+
+    const handleGetCoordinates = () => {
+        navigate('/get-location', { state: { latitude, longitude, origin: 'updateFlat', flatId } });
+    };
 
     useEffect(() => {
         const fetchFlatDetails = async () => {
+            console.log('Fetching flat details...');
             try {
                 const response = await fetch(`http://localhost:3000/api/flat/${flatId}`);
                 if (!response.ok) {
@@ -261,6 +328,25 @@ const UpdateFlat = () => {
                 }
                 const data = await response.json();
                 setFormData(data);
+
+                const storedLocation = JSON.parse(localStorage.getItem('location')) || { lat: 0, lng: 0 };
+                if (storedLocation) {
+                    setLatitude(storedLocation.lat);
+                    setLongitude(storedLocation.lng);
+                }
+                console.log('Stored Location:', storedLocation);
+                console.log('Stored Location:', storedLocation);
+                setFormData(prev => ({
+                    ...prev,
+                    ...data,
+                    location: {
+                        type: 'Point',
+                        coordinates: [
+                            data.location?.coordinates[0] || storedLocation.lat,
+                            data.location?.coordinates[1] || storedLocation.lng
+                        ]
+                    }
+                }));
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching flat details:', error);
@@ -274,10 +360,31 @@ const UpdateFlat = () => {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+        if (name === 'latitude' || name === 'longitude') {
+            setFormData(prev => ({
+                ...prev,
+                location: {
+                    ...prev.location,
+                    coordinates: name === 'latitude'
+                        ? [parseFloat(value), prev.location.coordinates[1]]
+                        : [prev.location.coordinates[0], parseFloat(value)]
+                }
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            }));
+        }
+    };
+
+    const addFeature = (feature) => {
+        if (!formData.features.includes(feature)) {
+            setFormData(prev => ({
+                ...prev,
+                features: [...prev.features, feature]
+            }));
+        }
     };
 
     const handleFeatureKeyDown = (e) => {
@@ -303,13 +410,13 @@ const UpdateFlat = () => {
             // Create a copy of the images array without the deleted image
             const updatedImages = [...formData.images];
             updatedImages.splice(index, 1);
-            
+
             // Update the state
             setFormData(prev => ({
                 ...prev,
                 images: updatedImages
             }));
-            
+
             // Update on server
             const response = await fetch(`http://localhost:3000/api/flat/update/${flatId}`, {
                 method: 'PUT',
@@ -318,13 +425,46 @@ const UpdateFlat = () => {
                 },
                 body: JSON.stringify({ images: updatedImages }),
             });
-            
+
             if (!response.ok) {
                 throw new Error('Failed to update images');
             }
-            
+
             toast.success('Image deleted successfully');
-            
+
+        } catch (error) {
+            console.error('Error deleting image:', error);
+            toast.error('Failed to delete image');
+        }
+    };
+
+    const handleDeleteParanomicImage = async (index) => {
+        try {
+            // Create a copy of the images array without the deleted image
+            const updatedImages = [...formData.paranomicImages];
+            updatedImages.splice(index, 1);
+
+            // Update the state
+            setFormData(prev => ({
+                ...prev,
+                paranomicImages: updatedImages
+            }));
+
+            // Update on server
+            const response = await fetch(`http://localhost:3000/api/flat/update/${flatId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ paranomicImages: updatedImages }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update images');
+            }
+
+            toast.success('Paranomic Image deleted successfully');
+
         } catch (error) {
             console.error('Error deleting image:', error);
             toast.error('Failed to delete image');
@@ -336,13 +476,13 @@ const UpdateFlat = () => {
             // Create a copy of the videos array without the deleted video
             const updatedVideos = [...formData.videos];
             updatedVideos.splice(index, 1);
-            
+
             // Update the state
             setFormData(prev => ({
                 ...prev,
                 videos: updatedVideos
             }));
-            
+
             // Update on server
             const response = await fetch(`http://localhost:3000/api/flat/update/${flatId}`, {
                 method: 'PUT',
@@ -351,11 +491,11 @@ const UpdateFlat = () => {
                 },
                 body: JSON.stringify({ videos: updatedVideos }),
             });
-            
+
             if (!response.ok) {
                 throw new Error('Failed to update videos');
             }
-            
+
             toast.success('Video deleted successfully');
         } catch (error) {
             console.error('Error deleting video:', error);
@@ -368,17 +508,17 @@ const UpdateFlat = () => {
             const response = await fetch(`http://localhost:3000/api/flats/media/${flatId}`, {
                 method: 'DELETE',
             });
-            
+
             if (!response.ok) {
                 throw new Error('Failed to delete media');
             }
-            
+
             setFormData(prev => ({
                 ...prev,
                 images: [],
                 videos: []
             }));
-            
+
             toast.success('All media deleted successfully');
         } catch (error) {
             console.error('Error deleting all media:', error);
@@ -453,7 +593,7 @@ const UpdateFlat = () => {
                             />
                         </FormGroup>
                     </Grid>
-                    
+
                     <FormGroup>
                         <Label>Description</Label>
                         <Textarea
@@ -496,7 +636,7 @@ const UpdateFlat = () => {
                                 onChange={handleChange}
                             />
                         </FormGroup>
-                        
+
                         <FormGroup>
                             <Label>Number of Living Rooms</Label>
                             <Input
@@ -534,6 +674,17 @@ const UpdateFlat = () => {
                                 type="number"
                                 name="originalCost"
                                 value={formData.originalCost}
+                                onChange={handleChange}
+                                required
+                            />
+                        </FormGroup>
+
+                        <FormGroup>
+                            <Label>Property Saling Cost (₹)</Label>
+                            <Input
+                                type="number"
+                                name="totalCost"
+                                value={formData.totalCost}
                                 onChange={handleChange}
                                 required
                             />
@@ -610,7 +761,7 @@ const UpdateFlat = () => {
                                 onChange={handleChange}
                             />
                         </FormGroup>
-                        
+
                         <FormGroup>
                             <Label>Check-out Time</Label>
                             <Input
@@ -643,6 +794,14 @@ const UpdateFlat = () => {
                             ))}
                         </FeatureTagsContainer>
                     </FormGroup>
+                    <AvailableFeaturesContainer>
+                        {availableFeatures.map((feature, index) => (
+                            <AvailableFeatureTag key={index} onClick={() => addFeature(feature)}>
+                                {getFeatureIcon(feature)}
+                                {feature}
+                            </AvailableFeatureTag>
+                        ))}
+                    </AvailableFeaturesContainer>
                 </Section>
 
                 <Section>
@@ -695,7 +854,7 @@ const UpdateFlat = () => {
                                 Refundable
                             </Label>
                         </FormGroup>
-                        
+
                         <FormGroup>
                             <Label>
                                 <Checkbox
@@ -707,7 +866,7 @@ const UpdateFlat = () => {
                                 On Sale
                             </Label>
                         </FormGroup>
-                        
+
                         <FormGroup>
                             <Label>
                                 <Checkbox
@@ -731,6 +890,16 @@ const UpdateFlat = () => {
                                 type="text"
                                 name="street"
                                 value={formData.street}
+                                onChange={handleChange}
+                            />
+                        </FormGroup>
+
+                        <FormGroup>
+                            <Label>Near By(also add distance)</Label>
+                            <Input
+                                type="text"
+                                name="nearby"
+                                value={formData.nearby}
                                 onChange={handleChange}
                             />
                         </FormGroup>
@@ -774,6 +943,29 @@ const UpdateFlat = () => {
                                 onChange={handleChange}
                             />
                         </FormGroup>
+
+                        <FormGroup>
+                            <Label>Latitude</Label>
+                            <Input
+                                type="text"
+                                name="latitude"
+                                placeholder='Enter Latitude'
+                                value={formData.location.coordinates[0]}
+                                onChange={handleChange}
+                            />
+                        </FormGroup>
+
+                        <FormGroup>
+                            <Label>Longitude</Label>
+                            <Input
+                                type="text"
+                                name="longitude"
+                                placeholder='Enter Longitude'
+                                value={formData.location.coordinates[1]}
+                                onChange={handleChange}
+                            />
+                        </FormGroup>
+                        <Button type="button" onClick={handleGetCoordinates}>Get Coordinates</Button>
                     </Grid>
                 </Section>
 
@@ -790,22 +982,37 @@ const UpdateFlat = () => {
                     >
                         Delete All Media
                     </Button> */}
-                    
+
                     <MediaSection>
                         <h3>Images</h3>
                         <MediaGrid>
                             {formData.images.map((image, index) => (
                                 <MediaItem key={index}>
-                                    <img 
-                                        src={`http://localhost:3000${image}`} 
-                                        alt={`Property ${index + 1}`} 
+                                    <img
+                                        src={`http://localhost:3000${image}`}
+                                        alt={`Property ${index + 1}`}
                                     />
                                     <DeleteButton onClick={() => handleDeleteImage(index)}>×</DeleteButton>
                                 </MediaItem>
                             ))}
                         </MediaGrid>
                     </MediaSection>
-                    
+
+                    <MediaSection>
+                        <h3>Paranomic Images</h3>
+                        <MediaGrid>
+                            {formData.paranomicImages.map((image, index) => (
+                                <MediaItem key={index}>
+                                    <img
+                                        src={`http://localhost:3000${image}`}
+                                        alt={`Property ${index + 1}`}
+                                    />
+                                    <DeleteButton onClick={() => handleDeleteParanomicImage(index)}>×</DeleteButton>
+                                </MediaItem>
+                            ))}
+                        </MediaGrid>
+                    </MediaSection>
+
                     {formData.videos.length > 0 && (
                         <MediaSection>
                             <h3>Videos</h3>
@@ -822,14 +1029,14 @@ const UpdateFlat = () => {
                             </MediaGrid>
                         </MediaSection>
                     )}
-                    
-                    <Button 
-                        type="button" 
-                        style={{ 
+
+                    <Button
+                        type="button"
+                        style={{
                             marginTop: '1rem',
                             backgroundColor: '#2ecc71',
                             maxWidth: '200px'
-                        }} 
+                        }}
                         onClick={() => navigate(`/upload/flat/${flatId}`)}
                     >
                         Add New Media

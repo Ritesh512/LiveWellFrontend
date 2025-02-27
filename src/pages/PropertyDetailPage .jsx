@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { Star, MapPin, Clock, Check, Camera, PlayCircle } from 'lucide-react';
-import { FaStar, FaMapMarkerAlt, FaClock, FaParking, FaCheck, FaTimes, FaWifi, FaSwimmingPool, FaUtensils, FaDumbbell, FaTrash, FaHome } from 'react-icons/fa';
+import { FaPhone, FaStar, FaMapMarkerAlt, FaClock, FaParking, FaCheck, FaTimes, FaWifi, FaSwimmingPool, FaUtensils, FaDumbbell, FaTrash, FaHome } from 'react-icons/fa';
 import { MdOutlineEdit, MdOutlineCleaningServices } from "react-icons/md";
 import { FaKitchenSet } from "react-icons/fa6";
 import { ImPowerCord } from "react-icons/im";
@@ -11,420 +11,22 @@ import ReviewForm from '../components/ReviewForm';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-
-const PageContainer = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 24px;
-`;
-
-const TitleSection = styled.div`
-  flex: 1;
-`;
-
-const PropertyName = styled.h1`
-  font-size: 28px;
-  margin: 0 0 8px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const Stars = styled.div`
-  display: flex;
-  gap: 2px;
-`;
-
-const StarIcon = styled(Star)`
-  width: 18px;
-  height: 18px;
-  fill: ${props => props.$filled ? '#FFD700' : '#E0E0E0'};
-  stroke: #FFD700;
-`;
-
-const Location = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #0066cc;
-  font-size: 14px;
-  margin-top: 8px;
-`;
-
-const RatingSection = styled.div`
-  text-align: right;
-`;
-
-const RatingBox = styled.div`
-  background: #0066cc;
-  color: white;
-  padding: 16px;
-  border-radius: 8px;
-  text-align: center;
-`;
-
-const RatingScore = styled.div`
-  font-size: 32px;
-  font-weight: bold;
-  margin-bottom: 4px;
-`;
-
-const RatingText = styled.div`
-  font-size: 14px;
-`;
-
-// const ViewAllPhotos = styled.button`
-//   position: absolute;
-//   bottom: 24px;
-//   right: 24px;
-//   background: white;
-//   border: none;
-//   padding: 8px 16px;
-//   border-radius: 4px;
-//   font-weight: 500;
-//   cursor: pointer;
-//   display: flex;
-//   align-items: center;
-//   gap: 8px;
-//   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-// `;
-
-const MainContent = styled.div``;
-
-const RoomCard = styled.div`
-  border: 1px solid #E0E0E0;
-  border-radius: 8px;
-  padding: 24px;
-  margin-bottom: 24px;
-`;
-
-const RoomTitle = styled.h2`
-  font-size: 20px;
-  margin: 0 0 16px 0;
-`;
-
-const RoomDetails = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
-`;
-
-const DetailItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #666;
-`;
-
-const BookButton = styled.button`
-  background: #0066cc;
-  color: white;
-  border: none;
-  width: 100%;
-  padding: 16px;
-  border-radius: 4px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-  
-  &:hover {
-    background: #0052a3;
-  }
-`;
-
-const ReviewSection = styled.div`
-  margin-top: 48px;
-`;
-
-const ReviewHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const ReviewCard = styled.div`
-  border: 1px solid #E0E0E0;
-  border-radius: 8px;
-  padding: 24px;
-  margin-bottom: 16px;
-`;
-
-const ReviewUser = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-`;
-
-const UserAvatar = styled.div`
-  width: 48px;
-  height: 48px;
-  border-radius: 24px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f0f0f0;
-`;
-
-const AvatarImage = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-`;
-
-
-const UserInfo = styled.div``;
-
-const UserName = styled.div`
-  font-weight: 500;
-`;
-
-const ReviewDate = styled.div`
-  color: #666;
-  font-size: 12px;
-`;
-
-
-const MainImage = styled.div`
-  grid-row: ${props => props.$imageCount >= 3 ? 'span 2' : 'span 1'};
-  background-size: cover;
-  background-position: center;
-  cursor: pointer;
-  min-height: 200px;
-`;
-
-const SmallImage = styled.div`
-  background-size: cover;
-  background-position: center;
-  cursor: pointer;
-  min-height: 200px;
-`;
-
-const ContentGrid = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 24px;
-  align-items: start; // This ensures the price section doesn't stretch
-`;
-
-const WriteReviewButton = styled.button`
-  background: #0066cc;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-
-  &:hover {
-    background: #0052a3;
-  }
-`;
-
-const PropertyTypeTag = styled.span`
-  background: #e3f2fd;
-  color: #0066cc;
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 14px;
-  font-weight: 500;
-`;
-
-const FeaturesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
-  margin: 24px 0;
-`;
-
-const FeatureItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  font-size: 14px;
-`;
-
-const RoomInfo = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-`;
-
-const InfoItem = styled.div`
-  background: #f8f9fa;
-  padding: 16px;
-  border-radius: 8px;
-  text-align: center;
-
-  h4 {
-    margin: 0 0 8px 0;
-    color: #666;
-    font-size: 14px;
-  }
-
-  p {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 500;
-  }
-`;
-
-
-const PriceSection = styled.div`
-  background: white;
-  border: 1px solid #E0E0E0;
-  border-radius: 8px;
-  padding: 24px;
-  position: sticky;
-  top: 24px;
-`;
-
-const PriceDisplay = styled.div`
-  margin-bottom: 16px;
-`;
-
-const PriceHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-`;
-
-const PriceInfo = styled.div`
-  text-align: right;
-`;
-
-const OriginalPrice = styled.div`
-  color: #666;
-  text-decoration: line-through;
-  font-size: 14px;
-`;
-
-const CurrentPrice = styled.div`
-  font-size: 28px;
-  font-weight: bold;
-  color: #333;
-`;
-
-const TaxInfo = styled.div`
-  color: #666;
-  font-size: 12px;
-`;
-
-const PriceTag = styled.div`
-  background: #e3f2fd;
-  color: #0066cc;
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 14px;
-  font-weight: 500;
-`;
-
-const AmenityList = styled.div`
-  margin: 16px 0;
-  padding: 16px 0;
-  border-top: 1px solid #E0E0E0;
-  border-bottom: 1px solid #E0E0E0;
-`;
-
-const AmenityItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  font-size: 14px;
-  color: ${props => props.$isAvailable ? '#333' : '#666'};
-
-  svg {
-    color: ${props => props.$isAvailable ? '#4CAF50' : '#666'};
-  }
-`;
-
-const ImportantInfo = styled.div`
-  margin: 16px 0;
-  font-size: 14px;
-  color: #666;
-
-  h4 {
-    color: #333;
-    margin: 0 0 8px 0;
-    font-size: 16px;
-  }
-`;
-
-const SaleTag = styled.div`
-  background: #fef0f0;
-  color: #e53935;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 500;
-  margin-bottom: 16px;
-  display: inline-block;
-`;
-
-const ConfirmationOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ConfirmationContainer = styled.div`
-  background: white;
-  padding: 24px;
-  border-radius: 8px;
-  width: 400px;
-  max-width: 90%;
-  text-align: center;
-`;
-
-const ConfirmationTitle = styled.h2`
-  margin-bottom: 16px;
-`;
-
-const ConfirmationButtons = styled.div`
-  display: flex;
-  justify-content: space-around;
-  margin-top: 24px;
-`;
-
-const ConfirmationButton = styled.button`
-  background: ${props => props.cancel ? '#ccc' : '#e53935'};
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-
-  &:hover {
-    background: ${props => props.cancel ? '#bbb' : '#d32f2f'};
-  }
-`;
+import {
+  PageContainer, Header, TitleSection, PropertyName, Stars, StarIcon,
+  Location, RatingSection, RatingBox, RatingScore, RatingText, MainContent,
+  RoomCard, RoomTitle, RoomDetails, DetailItem, BookButton, ReviewSection,
+  ReviewHeader, ReviewCard, ReviewUser, UserAvatar, AvatarImage, UserInfo,
+  UserName, ReviewDate, MainImage, SmallImage, ContentGrid,
+  WriteReviewButton, PropertyTypeTag, FeaturesGrid, FeatureItem,
+  RoomInfo, InfoItem, PriceSection, PriceDisplay, PriceHeader,
+  PriceInfo, OriginalPrice, CurrentPrice, TaxInfo, PriceTag,
+  AmenityList, AmenityItem, ImportantInfo, SaleTag, ConfirmationOverlay,
+  ConfirmationContainer, ConfirmationTitle, ConfirmationButtons,
+  ConfirmationButton, GalleryOverlay, RemainingCount, MediaBadge,
+  ViewAllPhotos, Gallery, MediaContainer, StyledImage, ShowMoreButton, ShowLessButton, Contact
+} from './PropertyDetailPageStyles';
+import ChatContainer from '../components/Chat/ChatContainer';
+import InitiateChatButton from '../components/Chat/InitiateChatButton';
 
 const getFeatureIcon = (feature) => {
   switch (feature.toLowerCase()) {
@@ -441,98 +43,61 @@ const getFeatureIcon = (feature) => {
   }
 };
 
-
-const GalleryOverlay = styled.div`
-  position: absolute;
+const ChatModal = styled.div`
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  flex-direction: column;
+  background: rgba(0, 0, 0, 0.5);
+  display: ${props => props.isOpen ? 'flex' : 'none'};
   justify-content: center;
   align-items: center;
-  color: white;
-  cursor: pointer;
-  transition: background 0.2s;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.5);
-  }
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+  padding: 40px;
 `;
 
-const RemainingCount = styled.div`
-  font-size: 20px;
-  font-weight: 600;
-  margin-top: 8px;
-`;
-
-const MediaBadge = styled.div`
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-`;
-
-const ViewAllPhotos = styled.button`
-  position: absolute;
-  bottom: 24px;
-  right: 24px;
+const ChatWrapper = styled.div`
   background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1200px;
+  height: 90vh;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.9);
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-weight: 500;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  z-index: 1;
+  ${'' /* margin:10px; */}
 
   &:hover {
-    transform: translateY(-1px);
+    background: white;
+    transform: scale(1.1);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    stroke: #666;
   }
 `;
-
-const Gallery = styled.div`
-  position: relative;
-  display: grid;
-  grid-template-columns: ${props => props.$imageCount >= 3 ? '2fr 1fr 1fr' : props.$imageCount === 2 ? '1fr 1fr' : '1fr'};
-  grid-template-rows: ${props => props.$imageCount >= 3 ? '200px 200px' : '400px'};
-  gap: 8px;
-  margin-bottom: 24px;
-  border-radius: 12px;
-  overflow: hidden;
-`;
-
-const MediaContainer = styled.div`
-  position: relative;
-  cursor: pointer;
-  overflow: hidden;
-  
-  &:hover {
-    img {
-      transform: scale(1.05);
-    }
-  }
-`;
-
-const StyledImage = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-`;
-
 
 const PropertyDetailPage = () => {
   const { flatId } = useParams();
@@ -541,15 +106,45 @@ const PropertyDetailPage = () => {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isReviewFormOpen, setIsReviewFormOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [hasBooking, setHasBooking] = useState(false);
+  const [bookingId, setBookingId] = useState("");
+  const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] = useState(false);
+  const [visibleReviews, setVisibleReviews] = useState(5);
+
   const navigate = useNavigate();
 
 
   const showRoomDetails = property?.type === 'Flat';
   const showRoomSharing = ['Hostel', 'PG'].includes(property?.type);
   const userId = JSON.parse(localStorage.getItem('user'))._id;
+  const user = JSON.parse(localStorage.getItem('user'));
   const role = JSON.parse(localStorage.getItem('user')).role;
   const email = JSON.parse(localStorage.getItem('user')).email;
+  const isEmailVerified = JSON.parse(localStorage.getItem('user')).emailVerified;
+  const isPhone = JSON.parse(localStorage.getItem('user')).numberVerified;
+  const gender = JSON.parse(localStorage.getItem('user')).gender;
 
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [isOwner, setIsOwner] = useState(false);
+
+  useEffect(() => {
+    // Check if the current user is the owner
+    if (user && property) {
+      setIsOwner(user._id === property.ownerId);
+    }
+  }, [user, property]);
+
+  const handleChatStart = (conversation) => {
+    setSelectedConversation(conversation);
+    setIsChatOpen(true);
+  };
+
+
+  // ownerID,ownerPhone, flatId,currentOwner
+
+  const allowBooking = (!property?.isForGirls) || (property?.isForGirls && gender === 'female');
+  // console.log(isEmailVerified, isPhone, allowBooking);
   const handleDeleteFlat = async () => {
     try {
       const response = await fetch(`http://localhost:3000/api/flat/delete/${flatId}`, {
@@ -569,6 +164,20 @@ const PropertyDetailPage = () => {
       console.error('Error deleting flat:', error);
       toast.error('Error deleting flat');
     }
+  };
+
+  const openMap = (property) => {
+    const address = `${property?.street}, ${property?.city}, ${property?.state}`;
+    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    window.open(mapUrl, '_blank');
+  };
+
+  const handleShowMoreReviews = () => {
+    setVisibleReviews((prev) => prev + 5);
+  };
+
+  const handleShowLessReviews = () => {
+    setVisibleReviews(5);
   };
 
   const confirmDeleteFlat = () => {
@@ -601,9 +210,25 @@ const PropertyDetailPage = () => {
     }
   };
 
+  const fetchBookingStatus = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/userBook/hasBooking/${userId}/${flatId}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      setHasBooking(data.hasBooking);
+      setBookingId(data.bookingId);
+    } catch (error) {
+      console.error('Error fetching booking status:', error);
+    }
+  };
+
   useEffect(() => {
     fetchPropertyDetails();
     fetchReviews();
+    fetchBookingStatus();
   }, [flatId]);
 
   const addUserBooking = async (bookingData) => {
@@ -621,8 +246,8 @@ const PropertyDetailPage = () => {
       }
 
       const data = await response.json();
-      console.log('Booking added:', data);
       toast.success('Booking added successfully!');
+      window.location.reload();
     } catch (error) {
       console.error('Error adding booking:', error);
       toast.error('Failed to add booking');
@@ -670,12 +295,7 @@ const PropertyDetailPage = () => {
             },
             body: JSON.stringify({
               ...response,
-              email,
-              // userId,
-              // flatId: property._id,
-              // ownerId: property.ownerId,
-              // type: property.type,
-              // ownerMobile: property.ownerMobile
+              email
             })
           });
           const verifyData = await verifyResponse.json();
@@ -729,6 +349,27 @@ const PropertyDetailPage = () => {
     }
   };
 
+  const handleCancelBooking = async () => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/userBook/cancel/${bookingId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        toast.success('Booking cancelled successfully!');
+        window.location.reload();
+      } else {
+        toast.warn('Failed to cancel booking');
+      }
+    } catch (error) {
+      console.error('Error cancelling booking:', error);
+      toast.error('Error cancelling booking');
+    }
+  };
+
   const renderPriceSection = () => {
     if (!property) return null;
 
@@ -741,67 +382,105 @@ const PropertyDetailPage = () => {
       taxes = 0,
       type = 'Property',
       totalRooms = 0,
-      availableRooms = 0
+      availableRooms = 0,
+      isForGirls = false,
+      Saleit = false,
     } = property;
 
     return (
-      <PriceSection>
-        <PriceHeader>
-          <PriceTag>
-            Per Month
-            {/* {type === 'Flat' ? 'Per Month' : 'Per Night'} */}
-          </PriceTag>
-          {isOnSale && <SaleTag>Limited Time Sale!</SaleTag>}
-        </PriceHeader>
+      <>
+        <PriceSection>
+          <PriceHeader>
+            <PriceTag>
+              Per Month
+            </PriceTag>
+            {isForGirls && <PriceTag>
+              Only For Girls
+            </PriceTag>}
 
-        <PriceDisplay>
-          <PriceInfo>
-            {originalCost > cost && (
-              <OriginalPrice>₹ {originalCost.toLocaleString()}</OriginalPrice>
-            )}
-            <CurrentPrice>₹ {cost.toLocaleString()}</CurrentPrice>
-            {taxes > 0 && (
-              <TaxInfo>+ ₹ {taxes.toLocaleString()} taxes & fees</TaxInfo>
-            )}
-          </PriceInfo>
-        </PriceDisplay>
+          </PriceHeader>
+          <PriceHeader>
+            {Saleit && <SaleTag>Buy {type}, Limited Time Sale!</SaleTag>}
+          </PriceHeader>
 
-        <AmenityList>
-          <AmenityItem $isAvailable={isAC}>
-            {isAC ? <FaCheck size={16} /> : <FaTimes size={16} />}
-            {isAC ? 'AC Room Available' : 'Non-AC Room'}
-          </AmenityItem>
-          <AmenityItem $isAvailable={isRefundable}>
-            {isRefundable ? <FaCheck size={16} /> : <FaTimes size={16} />}
-            {isRefundable ? 'Refundable' : 'Non-Refundable'}
-          </AmenityItem>
-          {totalRooms > 0 && (
-            <AmenityItem $isAvailable={availableRooms > 0}>
-              <FaCheck size={16} />
-              {availableRooms} of {totalRooms} rooms available
+          <PriceDisplay>
+            <PriceInfo>
+              {originalCost > cost && (
+                <OriginalPrice>₹ {originalCost.toLocaleString()}</OriginalPrice>
+              )}
+              <CurrentPrice>₹ {cost.toLocaleString()}</CurrentPrice>
+              {taxes > 0 && (
+                <TaxInfo>+ ₹ {taxes.toLocaleString()} taxes & fees</TaxInfo>
+              )}
+            </PriceInfo>
+          </PriceDisplay>
+
+          <AmenityList>
+            <AmenityItem $isAvailable={isAC}>
+              {isAC ? <FaCheck size={16} /> : <FaTimes size={16} />}
+              {isAC ? 'AC Room Available' : 'Non-AC Room'}
             </AmenityItem>
+            <AmenityItem $isAvailable={isRefundable}>
+              {isRefundable ? <FaCheck size={16} /> : <FaTimes size={16} />}
+              {isRefundable ? 'Refundable' : 'Non-Refundable'}
+            </AmenityItem>
+            {totalRooms > 0 && (
+              <AmenityItem $isAvailable={availableRooms > 0}>
+                <FaCheck size={16} />
+                {availableRooms} of {totalRooms} rooms available
+              </AmenityItem>
+            )}
+          </AmenityList>
+
+          <ImportantInfo>
+            <h4>Important Information</h4>
+            <ul>
+              {!isRefundable && (
+                <li>This booking cannot be cancelled or refunded</li>
+              )}
+              {type === 'Flat' && (
+                <li>Security deposit and maintenance charges may apply</li>
+              )}
+              {['PG', 'Hostel'].includes(type) && (
+                <li>Monthly and quarterly payment options available</li>
+              )}
+            </ul>
+          </ImportantInfo>
+
+          {userId !== property.ownerId && (
+            hasBooking ? (
+              <BookButton onClick={() => setIsCancelConfirmationOpen(true)}>
+                Cancel Booking
+              </BookButton>
+            ) : (
+              <BookButton onClick={handlePay} disabled={!isEmailVerified || !isPhone || !allowBooking}>
+                {availableRooms > 0 ? 'Book Now' : 'Join Waitlist'}
+              </BookButton>
+            )
           )}
-        </AmenityList>
 
-        <ImportantInfo>
-          <h4>Important Information</h4>
-          <ul>
-            {!isRefundable && (
-              <li>This booking cannot be cancelled or refunded</li>
-            )}
-            {type === 'Flat' && (
-              <li>Security deposit and maintenance charges may apply</li>
-            )}
-            {['PG', 'Hostel'].includes(type) && (
-              <li>Monthly and quarterly payment options available</li>
-            )}
-          </ul>
-        </ImportantInfo>
+          {
+            Saleit && role === "owner" && userId !== property.ownerId &&
+            <BookButton onClick={buyProperty} disabled={!isEmailVerified || !isPhone}>
+              Buy The property
+            </BookButton>
+          }
 
-        <BookButton onClick={handlePay}>
-          {availableRooms > 0 ? 'Book Now' : 'Join Waitlist'}
-        </BookButton>
-      </PriceSection>
+          <Contact>
+            Contact Us: <FaPhone style={{ marginRight: "8px", color: "#0066cc" }} />
+            {property?.ownerMobile}
+          </Contact>
+        </PriceSection>
+
+        {user && (
+          <InitiateChatButton
+            flatId={property?._id}
+            ownerId={property?.ownerId}
+            currentUser={user}
+            onChatStart={handleChatStart}
+          />
+        )}
+      </>
     );
   };
 
@@ -810,6 +489,7 @@ const PropertyDetailPage = () => {
 
     const totalMedia = [
       ...(property.images || []),
+      ...(property.paranomicImages || []),
       ...(property.videos || [])
     ];
     const displayLimit = 5;
@@ -897,6 +577,28 @@ const PropertyDetailPage = () => {
     }
   };
 
+  const buyProperty = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/flat/buy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ownerID: userId, ownerPhone: property.ownerMobile, flatId: property._id, currentOwner: property.currentOwner })
+      });
+
+      if (response.ok) {
+        await handlePay();
+        toast.success('Property bought successfully!');
+      } else {
+        toast.warn('Failed to buy property');
+      }
+    } catch (error) {
+      console.error('Error buying property:', error);
+      toast.error('Error buying property');
+    }
+  }
+
   return (
     <PageContainer>
       <Header>
@@ -922,7 +624,7 @@ const PropertyDetailPage = () => {
               <StarIcon key={star} $filled={star <= Math.floor(property?.rating)} />
             ))}
           </Stars>
-          <Location>
+          <Location onClick={() => openMap(property)}>
             <MapPin size={16} />
             {property?.street}, {property?.city}, {property?.state}
           </Location>
@@ -976,7 +678,11 @@ const PropertyDetailPage = () => {
             <RoomDetails>
               <DetailItem>
                 <Check size={16} />
-                Fits {property?.fits} {property?.fits > 1 ? 'Adults' : 'Adult'}
+                Number of Beds Sharing {property?.roomSharingForPg}
+              </DetailItem>
+              <DetailItem>
+                {/* <Check size={16} /> */}
+                {/* Number of Beds Sharing {property?.roomSharingForPg} */}
               </DetailItem>
               <DetailItem>
                 <Clock size={16} />
@@ -1008,7 +714,7 @@ const PropertyDetailPage = () => {
               )}
             </ReviewHeader>
 
-            {reviews.map((review) => (
+            {reviews.slice(0, visibleReviews).map((review) => (
               <ReviewCard key={review._id}>
                 {review.userId === userId && (
                   <FaTrash
@@ -1036,15 +742,29 @@ const PropertyDetailPage = () => {
                 <p>{review.context}</p>
               </ReviewCard>
             ))}
+
+            {reviews.length === 0 && <p>No Review Found ):</p>}
+            {visibleReviews < reviews.length && (
+              <ShowMoreButton onClick={handleShowMoreReviews}>Show More</ShowMoreButton>
+            )}
+            {visibleReviews > 5 && (
+              <ShowLessButton onClick={handleShowLessReviews}>Show Less</ShowLessButton>
+            )}
           </ReviewSection>
         </MainContent>
-        {renderPriceSection()}
+
+        <MainContent>
+          {renderPriceSection()}
+        </MainContent>
+
       </ContentGrid>
+
 
       <PropertyGalleryModal
         isOpen={isGalleryOpen}
         onClose={() => setIsGalleryOpen(false)}
         images={property?.images}
+        paranomicImages={property?.paranomicImages}
         videoUrl={property?.videos}
       />
 
@@ -1067,6 +787,36 @@ const PropertyDetailPage = () => {
           </ConfirmationContainer>
         </ConfirmationOverlay>
       )}
+
+      {isCancelConfirmationOpen && (
+        <ConfirmationOverlay>
+          <ConfirmationContainer>
+            <ConfirmationTitle>Are you sure you want to cancel the booking?</ConfirmationTitle>
+            <ConfirmationButtons>
+              <ConfirmationButton cancel onClick={() => setIsCancelConfirmationOpen(false)}>Don't Cancel</ConfirmationButton>
+              <ConfirmationButton onClick={handleCancelBooking}>Cancel Booking</ConfirmationButton>
+            </ConfirmationButtons>
+          </ConfirmationContainer>
+        </ConfirmationOverlay>
+      )}
+
+      <ChatModal isOpen={isChatOpen}>
+        <ChatWrapper>
+          <CloseButton onClick={() => setIsChatOpen(false)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </CloseButton>
+          <ChatContainer
+            currentUser={user}
+            userType={isOwner ? 'owner' : 'user'}
+            initialChat={selectedConversation}
+            onClose={() => setIsChatOpen(false)}
+            flatName={property?.name}
+          />
+        </ChatWrapper>
+      </ChatModal>
 
     </PageContainer>
   );

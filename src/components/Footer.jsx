@@ -108,7 +108,7 @@ const Copyright = styled.div`
 
 const Footer = () => {
   return (
-    <FooterContainer>
+    <FooterContainer  id="footer">
       <FooterContent>
         <CompanyInfo>
           <h3>RentBro.</h3>

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FaWifi, FaSwimmingPool, FaUtensils, FaDumbbell, FaHome, FaParking } from 'react-icons/fa';
 import { MdOutlineCleaningServices } from 'react-icons/md';
 import { FaKitchenSet } from "react-icons/fa6";
@@ -179,8 +179,18 @@ const AvailableFeatureTag = styled.div`
 
 const AddFlat = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const ownerId = JSON.parse(localStorage.getItem('user'))._id;
     const ownerMobile = JSON.parse(localStorage.getItem('user')).phone;
+    const [latitude, setLatitude] = useState(location.state?.latitude || '');
+    const [longitude, setLongitude] = useState(location.state?.longitude || '');
+
+    useEffect(() => {
+        if (location.state?.latitude && location.state?.longitude) {
+            setLatitude(location.state.latitude);
+            setLongitude(location.state.longitude);
+        }
+    }, [location.state]);
 
     const [formData, setFormData] = useState({
         ownerId,
@@ -206,6 +216,7 @@ const AddFlat = () => {
         availableRooms: 0,
         capacity: 0,
         features: [],
+        nearby: '',
         street: '',
         city: '',
         state: '',
@@ -215,7 +226,12 @@ const AddFlat = () => {
         Saleit: false,
         checkInTime: '11:00 Am',
         checkOutTime: '9:00 Pm',
-        taxes: 200
+        taxes: 200,
+        location: {
+            type: 'Point',
+            coordinates: [latitude, longitude]
+        },
+        totalCost: 0,
     });
 
     const [featureInput, setFeatureInput] = useState('');
@@ -239,6 +255,10 @@ const AddFlat = () => {
         'WiFi', 'Swimming Pool', 'Restaurant', 'Gym', 'Furnished Room', 'Kitchen and Cooking', 'Parking', 'Housekeeping and Cleaning', 'Power Backup'
     ];
 
+    const handleGetCoordinates = () => {
+        navigate('/get-location', { state: { latitude, longitude, origin: 'addFlat' } });
+    };
+
     const addFeature = (feature) => {
         if (!formData.features.includes(feature)) {
             setFormData(prev => ({
@@ -250,10 +270,22 @@ const AddFlat = () => {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+        if (name === 'latitude' || name === 'longitude') {
+            setFormData(prev => ({
+                ...prev,
+                location: {
+                    ...prev.location,
+                    coordinates: name === 'latitude'
+                        ? [parseFloat(value), prev.location.coordinates[1]]
+                        : [prev.location.coordinates[0], parseFloat(value)]
+                }
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            }));
+        }
     };
 
     const handleFeatureKeyDown = (e) => {
@@ -374,6 +406,26 @@ const AddFlat = () => {
                         </FormGroup>
 
                         <FormGroup>
+                            <Label>Number of Living Rooms</Label>
+                            <Input
+                                type="number"
+                                name="livingRooms"
+                                value={formData.livingRooms}
+                                onChange={handleChange}
+                            />
+                        </FormGroup>
+
+                        <FormGroup>
+                            <Label>BHK</Label>
+                            <Input
+                                type="number"
+                                name="bhk"
+                                value={formData.bhk}
+                                onChange={handleChange}
+                            />
+                        </FormGroup>
+
+                        <FormGroup>
                             <Label>Cost (₹)</Label>
                             <Input
                                 type="number"
@@ -394,6 +446,18 @@ const AddFlat = () => {
                                 required
                             />
                         </FormGroup>
+
+                        <FormGroup>
+                            <Label>Property Saling Cost (₹)</Label>
+                            <Input
+                                type="number"
+                                name="totalCost"
+                                value={formData.totalCost}
+                                onChange={handleChange}
+                                required
+                            />
+                        </FormGroup>
+
                     </Grid>
                 </Section>
 
@@ -541,12 +605,23 @@ const AddFlat = () => {
                 <Section>
                     <h2>Location</h2>
                     <Grid>
+
                         <FormGroup>
                             <Label>Street</Label>
                             <Input
                                 type="text"
                                 name="street"
                                 value={formData.street}
+                                onChange={handleChange}
+                            />
+                        </FormGroup>
+
+                        <FormGroup>
+                            <Label>Near By(also add distance)</Label>
+                            <Input
+                                type="text"
+                                name="nearby"
+                                value={formData.nearby}
                                 onChange={handleChange}
                             />
                         </FormGroup>
@@ -590,6 +665,29 @@ const AddFlat = () => {
                                 onChange={handleChange}
                             />
                         </FormGroup>
+
+                        <FormGroup>
+                            <Label>Latitude</Label>
+                            <Input
+                                type="text"
+                                name="latitude"
+                                placeholder='Enter Latitude'
+                                value={formData.location.coordinates[0]}
+                                onChange={handleChange}
+                            />
+                        </FormGroup>
+
+                        <FormGroup>
+                            <Label>Longitude</Label>
+                            <Input
+                                type="text"
+                                name="longitude"
+                                placeholder='Enter Longitude'
+                                value={formData.location.coordinates[1]}
+                                onChange={handleChange}
+                            />
+                        </FormGroup>
+                        <Button onClick={handleGetCoordinates}>Get Coordinates</Button>
                     </Grid>
                 </Section>
 

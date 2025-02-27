@@ -335,7 +335,7 @@ const SignupForm = () => {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {!showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </PasswordToggle>
             </InputWrapper>
           </InputGroup>

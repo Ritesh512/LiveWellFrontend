@@ -102,7 +102,8 @@ const PropertySearch = () => {
         city: '',
         pincode: '',
         type: '',
-        priceRange: '5000-10000'
+        priceRange: '5000-10000',
+        ownerSearch: false,
     });
 
     const [searchResults, setSearchResults] = useState([]);
@@ -114,6 +115,8 @@ const PropertySearch = () => {
     const [isSearchEnabled, setIsSearchEnabled] = useState(false);
     const [sortByPrice, setSortByPrice] = useState('');
     const [sortByRating, setSortByRating] = useState('');
+    const [userLocation, setUserLocation] = useState({ latitude: null, longitude: null });
+    const user = JSON.parse(localStorage.getItem('user')) || null;
 
     const priceRanges = [
         '5000-10000',
@@ -126,15 +129,34 @@ const PropertySearch = () => {
         setIsSearchEnabled(currentState && currentCity && filters.type);
     }, [filters]);
 
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setUserLocation({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    });
+                },
+                (error) => {
+                    console.error('Error getting user location:', error);
+                }
+            );
+        }
+    }, []);
+
     const handleSearch = async (e) => {
         e.preventDefault();
-        const { state, city, type, priceRange } = filters;
-        console.log('Searching with filters:', currentState, currentCity, type, priceRange);
+        const { state, city, type, priceRange, ownerSearch } = filters;
+        console.log('Searching with filters:', currentState, currentCity, type, priceRange, ownerSearch, userLocation.latitude, userLocation.longitude);
         const query = new URLSearchParams({
             state: state || currentState.name,
             city: city || currentCity.name,
             flatType: type,
-            priceRange
+            priceRange,
+            ownerSearch,
+            latitude: userLocation.latitude,
+            longitude: userLocation.longitude
         }).toString();
 
         try {
@@ -227,6 +249,20 @@ const PropertySearch = () => {
                         <option value="PG">PG</option>
                         <option value="Hostel">Hostel</option>
                     </Select>
+
+                    {
+                        user?.role !== 'user' && (
+                            <Select
+                                value={filters.ownerSearch}
+                                onChange={(e) => setFilters({ ...filters, ownerSearch: e.target.value })}
+                                required
+                            >
+                                {/* <option value=""></option> */}
+                                <option value="true">Buy Property</option>
+                                <option value="false">Search Property</option>
+                            </Select>
+                        )
+                    }
 
                     <Select
                         value={filters.priceRange}
