@@ -105,10 +105,10 @@ const SelectRole = styled.select`
   width: 100%;
 `;
 
-const Login = () => {
+const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("user");
+  const [role, setRole] = useState("admin");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
@@ -122,9 +122,9 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Login clicked!");
-    let result = await fetch("http://localhost:3000/api/auth/login", {
+    let result = await fetch("http://localhost:3000/api/admin/login", {
       method: "post",
-      body: JSON.stringify({ email, password, role }),
+      body: JSON.stringify({ email, password }),
       headers: { 'Content-Type': 'application/json' }
     });
   
@@ -145,7 +145,7 @@ const Login = () => {
       toast.success("Login Successfully", {
         position: "top-right",
       });
-      navigate(`/profile/${result.data._id}`);
+      navigate(`/`);
     } else {
       toast.warning(result.error, {
         position: "top-right",
@@ -180,8 +180,7 @@ const Login = () => {
             </PasswordToggleButton>
           </PasswordInputContainer>
           <SelectRole value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="user">User</option>
-            <option value="owner">Owner</option>
+            <option value="admin">Admin</option>
           </SelectRole>
           <SubmitButton type="submit">Login</SubmitButton>
         </LoginForm>
@@ -193,4 +192,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default AdminLogin;

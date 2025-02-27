@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { CgProfile } from "react-icons/cg";
+
 
 const CenteredContainer = styled.div`
   display: flex;
@@ -166,6 +166,7 @@ const StatusBadge = styled.span`
   background-color: ${props => props.verified ? '#d4edda' : '#f8d7da'};
   color: ${props => props.verified ? '#155724' : '#721c24'};
   margin-right: 1rem;
+  cursor: ${props => props.verified ? 'default' : 'pointer'};
 `;
 
 const Grid = styled.div`
@@ -296,14 +297,12 @@ const EditableField = styled.input`
 `;
 
 const SaveButton = styled.button`
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
   background-color: #3498db;
   color: white;
-  padding: 1.5rem 3rem;
-  border-radius: 12px;
-  font-weight: 600;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -379,6 +378,19 @@ const PropertyDocImage = styled.img`
   ${'' /* margin-bottom: 1rem; */}
 `;
 
+const ShowMoreButton = styled.button`
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  margin-top: 10px;
+  border-radius: 5px;
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
+
 const Profile = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
@@ -388,6 +400,8 @@ const Profile = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const role = user?.role || 'user';
   const userId = user?._id;
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
+
 
   useEffect(() => {
     fetchUserData();
@@ -407,6 +421,35 @@ const Profile = () => {
       });
     }
   }, [userData]);
+
+  const sendEmailOtp = async () => {
+    setEmailOtpSent(true);
+    try {
+      await axios.post('http://localhost:3000/api/users/email/sendOtp', {
+        role: role,
+        id: userId
+      });
+      toast.success('OTP sent to your email');
+      navigate("/verify-otp?method=email");
+    } catch (error) {
+      toast.error('Failed to send OTP');
+    }
+  };
+
+  const sendMobileOtp = async () => {
+    try {
+      // verifyMobileOtp(userData?.data?.phone);
+      navigate("/verify-otp?method=mobile");
+    } catch (error) {
+      toast.error('Failed to send OTP');
+    }
+  };
+
+
+  const handleShowMore = () => {
+    const path = role === 'owner' ? 'properties' : 'bookings';
+    navigate(`/all-${path}`);
+  };
 
   const fetchUserData = async () => {
     try {
@@ -485,7 +528,7 @@ const Profile = () => {
           <Header>
             <ProfileImageContainer>
               <ProfileImage
-                src={userData?.data?.photo ? `http://localhost:3000${userData.data.photo}` : '/assets/profile.jpg'}
+                src={userData?.data?.photo ? `http://localhost:3000${userData.data.photo}` : '/assets/profileImg.jpeg'}
                 alt="Profile"
               />
               <UploadLabel>
@@ -532,10 +575,21 @@ const Profile = () => {
               </InfoItem>
             </ProfileInfo>
             <StatusContainer>
-              <StatusBadge verified={userData?.data?.emailVerified}>
+              <StatusBadge
+                verified={userData?.data?.emailVerified}
+                onClick={() => {
+                  if (!userData?.data?.emailVerified) sendEmailOtp();
+                }}
+                disabled={emailOtpSent}
+              >
                 {userData?.data?.emailVerified ? 'Email Verified' : 'Email Unverified'}
               </StatusBadge>
-              <StatusBadge verified={userData?.data?.numberVerified}>
+              <StatusBadge
+                verified={userData?.data?.numberVerified}
+                onClick={() => {
+                  if (!userData?.data?.numberVerified) sendMobileOtp();
+                }}
+              >
                 {userData?.data?.numberVerified ? 'Phone Verified' : 'Phone Unverified'}
               </StatusBadge>
             </StatusContainer>
@@ -584,6 +638,12 @@ const Profile = () => {
                   onChange={(e) => handleInputChange('country', e.target.value)}
                 />
               </InfoGroup>
+              {hasChanges && (
+                <SaveButton onClick={handleSave}>
+                  <Save size={20} />
+                  Save Changes
+                </SaveButton>
+              )}
             </BasicInfoCard>
 
             {role === 'owner' && (
@@ -614,7 +674,7 @@ const Profile = () => {
           <PropertiesList>
             <CardTitle>{role === 'owner' ? 'Your Properties' : 'Your Bookings'}</CardTitle>
             {role === 'owner' ? (
-              userData?.flats?.map((flat) => (
+              userData?.flats?.slice(0, 3).map((flat) => (
                 <PropertyRow key={flat._id} onClick={() => navigateToProperty(flat._id)}>
                   <PropertyRowImage
                     src={`http://localhost:3000${flat.images[0]}`}
@@ -632,8 +692,8 @@ const Profile = () => {
                 </PropertyRow>
               ))
             ) : (
-              userData?.bookings?.map((booking) => (
-                <PropertyRow key={booking._id} onClick={() => navigateToProperty(booking.flatId._id)}>
+              userData?.bookings?.slice(0, 3).map((booking) => (
+                booking.isDeleted === false && <PropertyRow key={booking._id} onClick={() => navigateToProperty(booking.flatId._id)}>
                   <PropertyRowImage
                     src={`http://localhost:3000${booking.flatId.images[0]}`}
                     alt={booking.flatId.name}
@@ -652,17 +712,13 @@ const Profile = () => {
             )}
             {role === 'owner' && userData?.flats?.length === 0 && <p>No Flats Found ):</p>}
             {role !== 'owner' && userData?.bookings?.length === 0 && <p>No Bookings Found ):</p>}
-
+            {userData?.flats && userData?.flats?.length != 0 && <ShowMoreButton onClick={handleShowMore}>Show More</ShowMoreButton>}
+            {userData?.bookings && userData?.bookings?.length != 0 && <ShowMoreButton onClick={handleShowMore}>Show More</ShowMoreButton>}
           </PropertiesList>
         </Grid>
       </Content>
 
-      {hasChanges && (
-        <SaveButton onClick={handleSave}>
-          <Save size={20} />
-          Save Changes
-        </SaveButton>
-      )}
+
     </Container>
   );
 };

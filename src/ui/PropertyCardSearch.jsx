@@ -106,6 +106,10 @@ const LocationText = styled.div`
   align-items: center;
   gap: 4px;
   margin: 4px 0;
+  cursor: pointer; /* Add cursor pointer */
+  &:hover {
+    text-decoration: underline; /* Add underline on hover */
+  }
 `;
 
 const TagsContainer = styled.div`
@@ -214,27 +218,33 @@ const PropertyCardSearch = ({ property }) => {
     navigate(`/property-detail/${property._id}`, { state: { property } });
   };
 
+  const openMap = (property) => {
+    const address = `${property?.street}, ${property?.city}, ${property?.state}`;
+    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    window.open(mapUrl, '_blank');
+  };
+
   return (
     <>
       <PropertyCard>
         <ImageSection>
-          <MainImage 
-            src={`http://localhost:3000${property.images[0]}`} 
-            alt={property.name} 
+          <MainImage
+            src={`http://localhost:3000${property.images[0]}`}
+            alt={property.name}
             onClick={() => setIsGalleryOpen(true)}
             className="cursor-pointer hover:opacity-90 transition-opacity"
           />
           <ThumbnailContainer>
             {property.images.slice(1, 3).map((img, index) => (
-              <Thumbnail 
-                key={index} 
-                src={`http://localhost:3000${img}`} 
+              <Thumbnail
+                key={index}
+                src={`http://localhost:3000${img}`}
                 alt={`${property.name} ${index + 2}`}
                 onClick={() => setIsGalleryOpen(true)}
                 className="hover:opacity-90 transition-opacity"
               />
             ))}
-            <ViewAllThumb 
+            <ViewAllThumb
               onClick={() => setIsGalleryOpen(true)}
               className="hover:bg-black/70 transition-colors"
             >
@@ -247,9 +257,9 @@ const PropertyCardSearch = ({ property }) => {
           <HeaderSection>
             <div>
               <PropertyTitle>{property.name}</PropertyTitle>
-              <LocationText>
+              <LocationText onClick={() => openMap(property)}>
                 <FaMapMarkerAlt size={12} />
-                {property.distance}
+                {property?.street}, {property?.city}, {property?.state}
               </LocationText>
             </div>
           </HeaderSection>
@@ -261,7 +271,7 @@ const PropertyCardSearch = ({ property }) => {
           </TagsContainer>
 
           <AmenitiesSection>
-            {property.features.map((feature, index) => (
+            {property.features.slice(0, 4).map((feature, index) => (
               <AmenityItem key={index}>
                 {feature === 'gym' && <FaDumbbell />}
                 {feature === 'pool' && <FaSwimmingPool />}
@@ -271,10 +281,6 @@ const PropertyCardSearch = ({ property }) => {
               </AmenityItem>
             ))}
           </AmenitiesSection>
-
-          {/* <PropertyDescription>
-            {property.features.join(' • ')}
-          </PropertyDescription> */}
         </ContentSection>
 
         <Separator />
@@ -283,8 +289,8 @@ const PropertyCardSearch = ({ property }) => {
           <RatingContainer>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <RatingTextHighlight>{property.ratingText || 'Good'}</RatingTextHighlight>
-              <RatingBadge rating={property.rating}>
-                {property.rating}
+              <RatingBadge rating={Math.round(property.rating)}>
+                {Math.round(property.rating)}
                 <FaStar size={12} />
               </RatingBadge>
             </div>

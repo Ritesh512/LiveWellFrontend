@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Link as ScrollLink } from 'react-scroll';
 import styled from 'styled-components';
 
 const Nav = styled.nav`
@@ -26,6 +27,15 @@ const NavLinks = styled.div`
 const NavLink = styled(Link)`
   text-decoration: none;
   color: #333;
+  &:hover {
+    color: #4B9CE2;
+  }
+`;
+
+const ScrollNavLink = styled(ScrollLink)`
+  text-decoration: none;
+  color: #333;
+  cursor: pointer;
   &:hover {
     color: #4B9CE2;
   }
@@ -73,14 +83,25 @@ const Navbar = () => {
   return (
     <Nav>
       <Logo to="/">LiveWell</Logo>
-      <NavLinks>
+      {role !== 'admin' && (<NavLinks>
         <NavLink to="/property-search">Property</NavLink>
-        {/* <NavLink to="/pricing">Pricing</NavLink> */}
         {token && <NavLink to={`/profile/${userId}`}>Profile</NavLink>}
         {token && role === 'owner' && <NavLink to="/addFlat">Add Flat</NavLink>}
         <NavLink to="/about">About</NavLink>
-        <NavLink to="/contact">Contact</NavLink>
-      </NavLinks>
+        <ScrollNavLink to="footer" smooth={true} duration={500}>Contact</ScrollNavLink>
+      </NavLinks>)}
+
+      {role === 'admin' && (<>
+        <NavLinks>
+          <NavLink to="/property-search">Property</NavLink>
+          <NavLink to="/admin/analysis">Analysis</NavLink>
+          <NavLink to="/admin/verifyUser">VerifyUser</NavLink>
+          <NavLink to="/admin/complaints">Complaint</NavLink>
+          <NavLink to="/admin/searchUsers">SearchUsers</NavLink>
+        </NavLinks>
+      </>)
+      }
+
       <AuthButtons>
         {token ? (
           <Button className="logout" onClick={handleLogout}>Logout</Button>
@@ -91,6 +112,8 @@ const Navbar = () => {
           </>
         )}
       </AuthButtons>
+
+
     </Nav>
   );
 };
