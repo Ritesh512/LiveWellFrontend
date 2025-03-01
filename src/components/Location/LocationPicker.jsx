@@ -41,7 +41,7 @@ const LocationPicker = ({ onLocationSelect }) => {
         <div style={{ width: "100%" }}>
             {/* Search Bar */}
             <Autocomplete
-                apiKey=""
+                apiKey="AIzaSyDaM_8JLUhUw2Ml8UQdKAPB0h-TkRACI9A"
                 onPlaceSelected={(place) => {
                     if (!place.geometry) {
                         console.error("Selected place has no geometry data:", place);

@@ -311,10 +311,12 @@ const UpdateFlat = () => {
             type: 'Point',
             coordinates: [latitude, longitude]
         },
-        totalCost:0,
+        totalCost: 0,
     });
 
     const handleGetCoordinates = () => {
+        // Save the current form state to localStorage before navigating
+        localStorage.setItem('formDataTemp', JSON.stringify(formData));
         navigate('/get-location', { state: { latitude, longitude, origin: 'updateFlat', flatId } });
     };
 
@@ -322,32 +324,60 @@ const UpdateFlat = () => {
         const fetchFlatDetails = async () => {
             console.log('Fetching flat details...');
             try {
-                const response = await fetch(`http://localhost:3000/api/flat/${flatId}`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch flat details');
-                }
-                const data = await response.json();
-                setFormData(data);
+                // Check if we have temporary form data in localStorage
+                const savedFormData = localStorage.getItem('formDataTemp');
 
-                const storedLocation = JSON.parse(localStorage.getItem('location')) || { lat: 0, lng: 0 };
-                if (storedLocation) {
-                    setLatitude(storedLocation.lat);
-                    setLongitude(storedLocation.lng);
-                }
-                console.log('Stored Location:', storedLocation);
-                console.log('Stored Location:', storedLocation);
-                setFormData(prev => ({
-                    ...prev,
-                    ...data,
-                    location: {
-                        type: 'Point',
-                        coordinates: [
-                            data.location?.coordinates[0] || storedLocation.lat,
-                            data.location?.coordinates[1] || storedLocation.lng
-                        ]
+                if (savedFormData) {
+                    // If we have saved form data, use it instead of fetching
+                    const parsedFormData = JSON.parse(savedFormData);
+                    setFormData(parsedFormData);
+
+                    // Get location from localStorage if available
+                    const storedLocation = JSON.parse(localStorage.getItem('location')) || { lat: 0, lng: 0 };
+                    if (storedLocation) {
+                        setLatitude(storedLocation.lat);
+                        setLongitude(storedLocation.lng);
+
+                        // Update the coordinates in the form data
+                        setFormData(prev => ({
+                            ...prev,
+                            location: {
+                                type: 'Point',
+                                coordinates: [storedLocation.lat, storedLocation.lng]
+                            }
+                        }));
                     }
-                }));
-                setLoading(false);
+
+                    // Clear the temporary form data
+                    localStorage.removeItem('formDataTemp');
+                    setLoading(false);
+                } else {
+                    // If no saved form data, fetch from API
+                    const response = await fetch(`http://localhost:3000/api/flat/${flatId}`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch flat details');
+                    }
+                    const data = await response.json();
+
+                    const storedLocation = JSON.parse(localStorage.getItem('location')) || { lat: 0, lng: 0 };
+                    if (storedLocation) {
+                        setLatitude(storedLocation.lat);
+                        setLongitude(storedLocation.lng);
+                    }
+
+                    setFormData(prev => ({
+                        ...prev,
+                        ...data,
+                        location: {
+                            type: 'Point',
+                            coordinates: [
+                                data.location?.coordinates[0] || storedLocation.lat,
+                                data.location?.coordinates[1] || storedLocation.lng
+                            ]
+                        }
+                    }));
+                    setLoading(false);
+                }
             } catch (error) {
                 console.error('Error fetching flat details:', error);
                 toast.error('Failed to load flat details');
@@ -357,7 +387,6 @@ const UpdateFlat = () => {
 
         fetchFlatDetails();
     }, [flatId, navigate]);
-
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         if (name === 'latitude' || name === 'longitude') {

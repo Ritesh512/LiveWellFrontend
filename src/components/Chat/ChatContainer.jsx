@@ -103,6 +103,7 @@ const ChatContainer = ({ currentUser, userType, initialChat, onClose, flatName  
         currentUser={currentUser}
         userType={userType}
         flatName={flatName}
+        setConversations={setConversations}
       />
       <ChatWindow 
         selectedChat={selectedChat}
