@@ -351,7 +351,7 @@ const PropertyDetailPage = () => {
         body: JSON.stringify({ amount: flag ? property.totalCost : property.cost })
       });
       const data = await response.json();
-      console.log(data);
+      // console.log(data);
       initPay(data.data);
     } catch (error) {
       console.log(error);
@@ -606,8 +606,9 @@ const PropertyDetailPage = () => {
       });
 
       if (response.ok) {
-        await handlePay(true);
+        handlePay(true);
         toast.success('Property bought successfully!');
+        fetchPropertyDetails();
       } else {
         toast.warn('Failed to buy property');
       }

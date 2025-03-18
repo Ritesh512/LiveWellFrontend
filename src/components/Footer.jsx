@@ -1,6 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const FooterContainer = styled.footer`
   background: #f8f9fa;
@@ -107,8 +109,12 @@ const Copyright = styled.div`
 `;
 
 const Footer = () => {
+  const handleSubscribe = () => {
+    toast.success("Subscribed for the latest news and updates", { position: "top-right" });
+  };
+
   return (
-    <FooterContainer  id="footer">
+    <FooterContainer id="footer">
       <FooterContent>
         <CompanyInfo>
           <h3>RentBro.</h3>
@@ -146,7 +152,7 @@ const Footer = () => {
           <p>Subscribe to get the latest news and updates.</p>
           <Newsletter>
             <input type="email" placeholder="Enter your email" />
-            <button>Send</button>
+            <button onClick={handleSubscribe}>Send</button>
           </Newsletter>
         </FooterSection>
       </FooterContent>

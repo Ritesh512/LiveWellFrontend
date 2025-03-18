@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { FaBed, FaHome, FaBuilding } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const Card = styled.div`
   background: white;
@@ -89,6 +90,13 @@ const SeeMoreButton = styled.button`
 `;
 
 const PropertyCard = ({ image, title, location, price, rating, hasBookTag }) => {
+
+  const navigate = useNavigate();
+
+  const handleSubmit = () => {
+    navigate('/property-search');
+  };
+
   return (
     <Card>
       <ImageContainer>
@@ -102,7 +110,7 @@ const PropertyCard = ({ image, title, location, price, rating, hasBookTag }) => 
           <Price>{price}</Price>
           <Rating>⭐ {rating}</Rating>
         </PriceRatingContainer>
-        <SeeMoreButton>See More</SeeMoreButton>
+        <SeeMoreButton onClick={handleSubmit}>See More</SeeMoreButton>
       </Content>
     </Card>
   );

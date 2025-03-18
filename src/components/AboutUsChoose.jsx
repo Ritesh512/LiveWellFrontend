@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Building2, Clock, Users, Home } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Container = styled.div`
   background-color: #f5f9ff;
@@ -168,75 +169,83 @@ const SmallImage = styled.img`
   border-radius: 12px;
 `;
 
-const AboutUs = () => (
-  <Container>
-    <Section>
-      <ImageWrapper>
-        <MainImage src="/assets/modern-interior.jpg" alt="Modern interior space" />
-        <StatsContainer>
-          <StatBox>
-            <StatNumber>650+</StatNumber>
-            <StatLabel>Property Sale</StatLabel>
-          </StatBox>
-          <StatBox>
-            <StatNumber>400+</StatNumber>
-            <StatLabel>Flats/Rooms/House Rent</StatLabel>
-          </StatBox>
-        </StatsContainer>
-      </ImageWrapper>
-      
-      <ContentWrapper>
-        <Title>About Us</Title>
-        <MainTitle>Rent Your Perfect Space</MainTitle>
-        <Description>
-          LiveWell connects you to trusted, comfortable spaces with secure booking and effortless management. 
-          Discover a seamless way to live, tailored for your peace of mind.
-        </Description>
-        <Button>Book Now</Button>
-      </ContentWrapper>
-    </Section>
+const AboutUsChoose = () => {
+  const navigate = useNavigate();
 
-    <WhyChooseUsSection>
-      <ContentWrapper>
-        <Title>Why Choose Us ?</Title>
-        <FeatureList>
-          <FeatureItem>
-            <IconWrapper>
-              <Building2 size={24} color="#5ba4fc" />
-            </IconWrapper>
-            <FeatureText>Secure Payment With UPI or GooglePay or PhonePay</FeatureText>
-          </FeatureItem>
-          <FeatureItem>
-            <IconWrapper>
-              <Clock size={24} color="#5ba4fc" />
-            </IconWrapper>
-            <FeatureText>24/7 Customer Support</FeatureText>
-          </FeatureItem>
-          <FeatureItem>
-            <IconWrapper>
-              <Users size={24} color="#5ba4fc" />
-            </IconWrapper>
-            <FeatureText>3000+ Customer Review</FeatureText>
-          </FeatureItem>
-          <FeatureItem>
-            <IconWrapper>
-              <Home size={24} color="#5ba4fc" />
-            </IconWrapper>
-            <FeatureText>Short-term or long-term rentals—find what suits you</FeatureText>
-          </FeatureItem>
-        </FeatureList>
-        <Button style={{ marginTop: '2rem' }}>Learn More</Button>
-      </ContentWrapper>
+  const handleSubmit = () => {
+    navigate('/property-search');
+  };
 
-      <ImageGrid>
-        <LargeImage src="/assets/property-1.jpg" alt="Beautiful house exterior" />
-        <SmallImagesContainer>
-          <SmallImage src="/assets/property-2.jpg" alt="House detail 1" />
-          <SmallImage src="/assets/property-3.jpg" alt="House detail 2" />
-        </SmallImagesContainer>
-      </ImageGrid>
-    </WhyChooseUsSection>
-  </Container>
-);
+  return (
+    <Container>
+      <Section>
+        <ImageWrapper>
+          <MainImage src="/assets/modern-interior.jpg" alt="Modern interior space" />
+          <StatsContainer>
+            <StatBox>
+              <StatNumber>650+</StatNumber>
+              <StatLabel>Property Sale</StatLabel>
+            </StatBox>
+            <StatBox>
+              <StatNumber>400+</StatNumber>
+              <StatLabel>Flats/Rooms/House Rent</StatLabel>
+            </StatBox>
+          </StatsContainer>
+        </ImageWrapper>
+        
+        <ContentWrapper>
+          <Title>About Us</Title>
+          <MainTitle>Rent Your Perfect Space</MainTitle>
+          <Description>
+            LiveWell connects you to trusted, comfortable spaces with secure booking and effortless management. 
+            Discover a seamless way to live, tailored for your peace of mind.
+          </Description>
+          <Button onClick={handleSubmit}>Book Now</Button>
+        </ContentWrapper>
+      </Section>
 
-export default AboutUs;
+      <WhyChooseUsSection>
+        <ContentWrapper>
+          <Title>Why Choose Us ?</Title>
+          <FeatureList>
+            <FeatureItem>
+              <IconWrapper>
+                <Building2 size={24} color="#5ba4fc" />
+              </IconWrapper>
+              <FeatureText>Secure Payment With UPI or GooglePay or PhonePay</FeatureText>
+            </FeatureItem>
+            <FeatureItem>
+              <IconWrapper>
+                <Clock size={24} color="#5ba4fc" />
+              </IconWrapper>
+              <FeatureText>24/7 Customer Support</FeatureText>
+            </FeatureItem>
+            <FeatureItem>
+              <IconWrapper>
+                <Users size={24} color="#5ba4fc" />
+              </IconWrapper>
+              <FeatureText>3000+ Customer Review</FeatureText>
+            </FeatureItem>
+            <FeatureItem>
+              <IconWrapper>
+                <Home size={24} color="#5ba4fc" />
+              </IconWrapper>
+              <FeatureText>Short-term or long-term rentals—find what suits you</FeatureText>
+            </FeatureItem>
+          </FeatureList>
+          <Button style={{ marginTop: '2rem' }}>Learn More</Button>
+        </ContentWrapper>
+
+        <ImageGrid>
+          <LargeImage src="/assets/property-1.jpg" alt="Beautiful house exterior" />
+          <SmallImagesContainer>
+            <SmallImage src="/assets/property-2.jpg" alt="House detail 1" />
+            <SmallImage src="/assets/property-3.jpg" alt="House detail 2" />
+          </SmallImagesContainer>
+        </ImageGrid>
+      </WhyChooseUsSection>
+    </Container>
+  );
+};
+
+export default AboutUsChoose;

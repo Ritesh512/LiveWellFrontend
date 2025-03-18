@@ -188,6 +188,9 @@ const Login = () => {
         <CreateAccountLink>
           Don't have an account? <Link to="/signup">Create Account</Link>
         </CreateAccountLink>
+        <CreateAccountLink>
+          <Link to="/forgot-password">Forgot Password</Link>
+        </CreateAccountLink>
       </FormContainer>
     </CenteredContainer>
   );

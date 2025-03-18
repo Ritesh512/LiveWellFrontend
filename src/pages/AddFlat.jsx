@@ -328,8 +328,19 @@ const AddFlat = () => {
         }));
     };
 
+    const formatText = (text) => {
+        return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const formattedFormData = {
+            ...formData,
+            city: formatText(formData.city),
+            state: formatText(formData.state)
+        };
+        
         try {
             const response = await fetch('http://localhost:3000/api/flat/add', {
                 method: 'POST',

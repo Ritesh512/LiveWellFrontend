@@ -88,6 +88,7 @@ const Navbar = () => {
         <NavLink to="/property-search">Property</NavLink>
         {token && <NavLink to={`/profile/${userId}`}>Profile</NavLink>}
         {token && role === 'owner' && <NavLink to="/addFlat">Add Flat</NavLink>}
+        <NavLink to="/complaints">Complaint</NavLink>
         <NavLink to="/about">About</NavLink>
         <ScrollNavLink to="footer" smooth={true} duration={500}>Contact</ScrollNavLink>
       </NavLinks>)}
