@@ -276,7 +276,8 @@ const ComplaintsPage = () => {
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newStatus, setNewStatus] = useState('');
-  
+  const token = JSON.parse(localStorage.getItem('token'));
+
   const rowsPerPage = 10;
 
   useEffect(() => {
@@ -286,22 +287,26 @@ const ComplaintsPage = () => {
   const fetchComplaints = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:3000/api/people/complaints');
-      
+      const response = await axios.get('http://localhost:3000/api/people/complaints', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
       // Set complaints
       setComplaints(response.data || []);
-      
+
       // Calculate stats
       if (response.data && response.data.length > 0) {
         const totalComplaints = response.data.length;
         const openCount = response.data.filter(c => c.status.toLowerCase() === 'open').length;
         const inProgressCount = response.data.filter(c => c.status.toLowerCase() === 'in progress').length;
         const resolvedCount = response.data.filter(c => c.status.toLowerCase() === 'resolved').length;
-        
+
         const maintenanceCount = response.data.filter(c => c.complaintType.toLowerCase() === 'maintenance').length;
         const securityCount = response.data.filter(c => c.complaintType.toLowerCase() === 'security').length;
         const otherTypeCount = totalComplaints - maintenanceCount - securityCount;
-        
+
         setStats({
           total: totalComplaints,
           open: openCount,
@@ -312,7 +317,7 @@ const ComplaintsPage = () => {
           other: otherTypeCount
         });
       }
-      
+
       setLoading(false);
     } catch (error) {
       console.error('Error fetching complaints:', error);
@@ -326,21 +331,21 @@ const ComplaintsPage = () => {
     if (filters.status !== 'all' && complaint.status.toLowerCase() !== filters.status.toLowerCase()) {
       return false;
     }
-    
+
     // Filter by type
     if (filters.type !== 'all' && complaint.complaintType.toLowerCase() !== filters.type.toLowerCase()) {
       return false;
     }
-    
+
     // Filter by isDeleted status
     if (filters.isDeleted === 'active' && complaint.isDeleted) {
       return false;
     }
-    
+
     if (filters.isDeleted === 'deleted' && !complaint.isDeleted) {
       return false;
     }
-    
+
     return true;
   });
 
@@ -373,40 +378,40 @@ const ComplaintsPage = () => {
 
   const submitStatusUpdate = async () => {
     if (!selectedComplaint || !newStatus) return;
-    
+
     try {
       // This is a mock implementation - replace with your actual API endpoint
       await axios.put(`http://localhost:3000/api/people/complaints/${selectedComplaint._id}`, {
         status: newStatus
       });
-      
+
       // Update local state
-      const updatedComplaints = complaints.map(c => 
+      const updatedComplaints = complaints.map(c =>
         c._id === selectedComplaint._id ? { ...c, status: newStatus } : c
       );
       toast.success('Complaint status updated successfully', { position: "top-right" });
-      
+
       setComplaints(updatedComplaints);
-      
+
       // Update stats
       const updatedStats = { ...stats };
-      
+
       // Decrement old status count
       if (selectedComplaint.status.toLowerCase() === 'open') updatedStats.open--;
       else if (selectedComplaint.status.toLowerCase() === 'in progress') updatedStats.inProgress--;
       else if (selectedComplaint.status.toLowerCase() === 'resolved') updatedStats.resolved--;
-      
+
       // Increment new status count
       if (newStatus.toLowerCase() === 'open') updatedStats.open++;
       else if (newStatus.toLowerCase() === 'in progress') updatedStats.inProgress++;
       else if (newStatus.toLowerCase() === 'resolved') updatedStats.resolved++;
-      
+
       setStats(updatedStats);
-      
+
       // Close modal
       setShowStatusModal(false);
       setSelectedComplaint(null);
-      
+
     } catch (error) {
       console.error('Error updating complaint status:', error);
       toast.error('Error updating complaint status', { position: "top-right" });
@@ -423,17 +428,17 @@ const ComplaintsPage = () => {
           <StatValue color="#3498db">{stats.total}</StatValue>
           <StatLabel>Total Complaints</StatLabel>
         </StatCard>
-        
+
         <StatCard color="#e74c3c">
           <StatValue color="#e74c3c">{stats.open}</StatValue>
           <StatLabel>Open Complaints</StatLabel>
         </StatCard>
-        
+
         <StatCard color="#f39c12">
           <StatValue color="#f39c12">{stats.inProgress}</StatValue>
           <StatLabel>In Progress</StatLabel>
         </StatCard>
-        
+
         <StatCard color="#2ecc71">
           <StatValue color="#2ecc71">{stats.resolved}</StatValue>
           <StatLabel>Resolved</StatLabel>
@@ -443,9 +448,9 @@ const ComplaintsPage = () => {
       <FiltersContainer>
         <FilterGroup>
           <FilterLabel>Status</FilterLabel>
-          <FilterSelect 
-            name="status" 
-            value={filters.status} 
+          <FilterSelect
+            name="status"
+            value={filters.status}
             onChange={handleFilterChange}
           >
             <option value="all">All Statuses</option>
@@ -455,12 +460,12 @@ const ComplaintsPage = () => {
             <option value="pending">Pending</option>
           </FilterSelect>
         </FilterGroup>
-        
+
         <FilterGroup>
           <FilterLabel>Complaint Type</FilterLabel>
-          <FilterSelect 
-            name="type" 
-            value={filters.type} 
+          <FilterSelect
+            name="type"
+            value={filters.type}
             onChange={handleFilterChange}
           >
             <option value="all">All Types</option>
@@ -471,12 +476,12 @@ const ComplaintsPage = () => {
             <option value="other">Other</option>
           </FilterSelect>
         </FilterGroup>
-        
+
         <FilterGroup>
           <FilterLabel>Status</FilterLabel>
-          <FilterSelect 
-            name="isDeleted" 
-            value={filters.isDeleted} 
+          <FilterSelect
+            name="isDeleted"
+            value={filters.isDeleted}
             onChange={handleFilterChange}
           >
             <option value="all">All Complaints</option>
@@ -517,10 +522,10 @@ const ComplaintsPage = () => {
                     <Td>{formatDate(complaint.createdAt)}</Td>
                     <Td>{formatDate(complaint.updatedAt)}</Td>
                     <Td>
-                      <ActionButton onClick={() => handleUpdateStatus(complaint)}>
+                      {/* <ActionButton onClick={() => handleUpdateStatus(complaint)}>
                         Update Status
-                      </ActionButton>
-                      <ActionButton 
+                      </ActionButton> */}
+                      <ActionButton
                         color={complaint.isDeleted ? '#27ae60' : '#e74c3c'}
                       >
                         {complaint.isDeleted ? 'Restore' : 'Delete'}
@@ -540,15 +545,15 @@ const ComplaintsPage = () => {
 
           {totalPages > 1 && (
             <Pagination>
-              <PageButton 
+              <PageButton
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
               >
                 Previous
               </PageButton>
-              
+
               {pageNumbers.map(number => (
-                <PageButton 
+                <PageButton
                   key={number}
                   active={number === currentPage}
                   onClick={() => setCurrentPage(number)}
@@ -556,8 +561,8 @@ const ComplaintsPage = () => {
                   {number}
                 </PageButton>
               ))}
-              
-              <PageButton 
+
+              <PageButton
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
               >
@@ -582,7 +587,7 @@ const ComplaintsPage = () => {
               <option value="Resolved">Resolved</option>
               <option value="Pending">Pending</option>
             </FilterSelect>
-            
+
             <ModalButtons>
               <ModalButton onClick={() => setShowStatusModal(false)}>Cancel</ModalButton>
               <ModalButton primary onClick={submitStatusUpdate}>Update Status</ModalButton>

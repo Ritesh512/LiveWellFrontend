@@ -83,7 +83,9 @@ const OtpVerification = () => {
     const role = user?.role || 'user';
     const userId = user?._id;
 
-    useEffect(() => {
+    useEffect(() => {},[])
+
+    useEffect(() => { 
         const queryParams = new URLSearchParams(location.search);
         const methodParam = queryParams.get('method');
         if (methodParam) {

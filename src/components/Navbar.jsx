@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Link as ScrollLink } from 'react-scroll';
 import styled from 'styled-components';
+import Notifications from './Notifications';
 
 const Nav = styled.nav`
   display: flex;
@@ -87,6 +88,7 @@ const Navbar = () => {
         <NavLink to="/property-search">Property</NavLink>
         {token && <NavLink to={`/profile/${userId}`}>Profile</NavLink>}
         {token && role === 'owner' && <NavLink to="/addFlat">Add Flat</NavLink>}
+        <NavLink to="/complaints">Complaint</NavLink>
         <NavLink to="/about">About</NavLink>
         <ScrollNavLink to="footer" smooth={true} duration={500}>Contact</ScrollNavLink>
       </NavLinks>)}
@@ -104,7 +106,10 @@ const Navbar = () => {
 
       <AuthButtons>
         {token ? (
-          <Button className="logout" onClick={handleLogout}>Logout</Button>
+          <>
+            <Button className="logout" onClick={handleLogout}>Logout</Button>
+            <Notifications  userId={userId}/>
+          </>
         ) : (
           <>
             <Button className="login" onClick={() => navigate('/signup')}>Sign Up</Button>

@@ -29,6 +29,9 @@ import SearchUserPage from './pages/Admin/SearchUserPage';
 import AdminLogin from './pages/Admin/AdminLogin';
 import Property360View from './components/Property360View';
 import RegisterProperty from './components/Location/RegisterProperty';
+import ComplaintPage from './pages/ComplaintPage';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 const AppContainer = styled.div`
   font-family: 'Inter', sans-serif;
@@ -59,12 +62,15 @@ function App() {
               <Route path="/admin/complaints" element={<ComplaintsPage />} />
               <Route path="/admin/searchUsers" element={<SearchUserPage />} />
               <Route path="/get-location" element={<RegisterProperty />} />
-              
+              <Route path="/complaints" element={<ComplaintPage />} />
+
             </Route>
             {/* <Route path="/chat" element={<ChatPageComponent />} /> */}
             <Route path="/property360view" element={<Property360View />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignupForm />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/resetPassword/:resetToken" element={<ResetPassword />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             {/* <Route path="createAdmin" element={<CreateAdmin />} /> */}
@@ -73,7 +79,17 @@ function App() {
           <Footer />
         </AppContainer>
       </BrowserRouter>
-      <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </>
   )
 }

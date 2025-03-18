@@ -23,7 +23,7 @@ import {
   AmenityList, AmenityItem, ImportantInfo, SaleTag, ConfirmationOverlay,
   ConfirmationContainer, ConfirmationTitle, ConfirmationButtons,
   ConfirmationButton, GalleryOverlay, RemainingCount, MediaBadge,
-  ViewAllPhotos, Gallery, MediaContainer, StyledImage, ShowMoreButton, ShowLessButton, Contact
+  ViewAllPhotos, Gallery, MediaContainer, StyledImage, ShowMoreButton, ShowLessButton, Contact, TotalCostTag
 } from './PropertyDetailPageStyles';
 import ChatContainer from '../components/Chat/ChatContainer';
 import InitiateChatButton from '../components/Chat/InitiateChatButton';
@@ -136,7 +136,7 @@ const PropertyDetailPage = () => {
   }, [user, property]);
 
   const handleChatStart = (conversation) => {
-    setSelectedConversation(conversation);
+    // setSelectedConversation(conversation);
     setIsChatOpen(true);
   };
 
@@ -167,8 +167,17 @@ const PropertyDetailPage = () => {
   };
 
   const openMap = (property) => {
-    const address = `${property?.street}, ${property?.city}, ${property?.state}`;
-    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    const { latitude, longitude } = property?.location?.coordinates || {};
+
+    let mapUrl;
+
+    if (latitude && longitude) {
+      mapUrl = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+    } else {
+      const address = `${property?.street}, ${property?.city}, ${property?.state}`;
+      mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    }
+
     window.open(mapUrl, '_blank');
   };
 
@@ -331,7 +340,7 @@ const PropertyDetailPage = () => {
     rzp1.open();
   };
 
-  const handlePay = async () => {
+  const handlePay = async (flag = false) => {
     try {
       const orderURL = "http://localhost:3000/api/payment/orders";
       const response = await fetch(orderURL, {
@@ -339,10 +348,10 @@ const PropertyDetailPage = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ amount: property.cost })
+        body: JSON.stringify({ amount: flag ? property.totalCost : property.cost })
       });
       const data = await response.json();
-      console.log(data);
+      // console.log(data);
       initPay(data.data);
     } catch (error) {
       console.log(error);
@@ -404,6 +413,7 @@ const PropertyDetailPage = () => {
           </PriceHeader>
 
           <PriceDisplay>
+
             <PriceInfo>
               {originalCost > cost && (
                 <OriginalPrice>₹ {originalCost.toLocaleString()}</OriginalPrice>
@@ -412,6 +422,14 @@ const PropertyDetailPage = () => {
               {taxes > 0 && (
                 <TaxInfo>+ ₹ {taxes.toLocaleString()} taxes & fees</TaxInfo>
               )}
+
+              {
+                Saleit && role === "owner" && (
+                  <TotalCostTag>
+                    Total Property cost: {property.totalCost}
+                  </TotalCostTag>
+                )
+              }
             </PriceInfo>
           </PriceDisplay>
 
@@ -588,8 +606,9 @@ const PropertyDetailPage = () => {
       });
 
       if (response.ok) {
-        await handlePay();
+        handlePay(true);
         toast.success('Property bought successfully!');
+        fetchPropertyDetails();
       } else {
         toast.warn('Failed to buy property');
       }

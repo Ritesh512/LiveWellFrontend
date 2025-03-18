@@ -81,22 +81,28 @@ const ChatWindow = ({ selectedChat, currentUser, userType, flatName }) => {
 
   useEffect(() => {
     if (selectedChat) {
-      // Fetch messages for selected chat
       const fetchMessages = async () => {
         try {
           const response = await fetch(`http://localhost:3000/api/messages/${selectedChat._id}`);
           const data = await response.json();
           setMessages(data.messages);
-          setCurFlatName(data.flatName)
-          scrollToBottom();
+          console.log("Messages: ", data);
+  
+          // Mark messages as read after 5 sec delay
+          setTimeout(async () => {
+            await fetch(`http://localhost:3000/api/messages/read/${selectedChat._id}`, {
+              method: 'PATCH',
+            });
+          }, 5000);
         } catch (error) {
           console.error('Error fetching messages:', error);
         }
       };
-
+  
       fetchMessages();
     }
   }, [selectedChat]);
+  
 
   useEffect(() => {
     if (!socket) return;
@@ -144,6 +150,16 @@ const ChatWindow = ({ selectedChat, currentUser, userType, flatName }) => {
   console.log("Selected  chat: ", selectedChat);
 
   if (selectedChat && !(selectedChat.userId?.firstName || selectedChat.ownerId?.firstName)) {
+    return (
+      <WindowContainer>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+          <h3>Select a conversation to start chatting</h3>
+        </div>
+      </WindowContainer>
+    );
+  }
+
+  if (selectedChat===null) {
     return (
       <WindowContainer>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>

@@ -49,7 +49,6 @@ const FlatName = styled.span`
   font-size: 14px;
 `;
 
-
 const LastMessage = styled.p`
   margin: 5px 0 0;
   font-size: 14px;
@@ -65,7 +64,41 @@ const Time = styled.span`
   float: right;
 `;
 
-const ChatSidebar = ({ conversations, selectedChat, setSelectedChat, currentUser, userType }) => {
+const UnreadBadge = styled.span`
+  background-color: red;
+  color: white;
+  font-size: 12px;
+  padding: 5px 8px;
+  border-radius: 50%;
+  float: right;
+`;
+
+const ChatSidebar = ({ conversations, selectedChat, setSelectedChat, currentUser, userType, setConversations }) => {
+
+  const handleChatSelect = (conversation) => {
+    setSelectedChat(conversation);
+
+    // Mark messages as read when selecting the chat
+    if (conversation.unreadCount > 0) {
+      // Update read status in backend
+      fetch(`http://localhost:3000/api/messages/read/${conversation._id}`, {
+        method: 'PATCH'
+      }).then(() => {
+        // Update the conversation's unreadCount in the state
+        setSelectedChat(prev => ({
+          ...prev,
+          unreadCount: 0
+        }));
+
+        // Update the conversations list to reflect the change
+        setConversations(prevConversations => prevConversations.map(conv => 
+          conv._id === conversation._id ? { ...conv, unreadCount: 0 } : conv
+        ));
+      }).catch(error => {
+        console.error('Error marking messages as read:', error);
+      });
+    }
+  };
 
   return (
     <SidebarContainer>
@@ -79,20 +112,20 @@ const ChatSidebar = ({ conversations, selectedChat, setSelectedChat, currentUser
           <ConversationItem
             key={conversation._id}
             selected={selectedChat?._id === conversation._id}
-            onClick={() => setSelectedChat(conversation)}
+            onClick={() => handleChatSelect(conversation)}
           >
             <Time>{format(new Date(conversation.updatedAt), 'HH:mm')}</Time>
             <Name>
               {userType === 'owner'
                 ? <>
-                  {conversation?.userId?.firstName} {conversation?.userId?.lastName} - <FlatName>{conversation?.flatId?.name}</FlatName>
-                </>
+                    {conversation?.userId?.firstName} {conversation?.userId?.lastName} - <FlatName>{conversation?.flatId?.name}</FlatName>
+                  </>
                 : <>
-                  {conversation.ownerId?.firstName} {conversation.ownerId?.lastName} - <FlatName>{conversation?.flatId?.name}</FlatName>
-                </>
+                    {conversation.ownerId?.firstName} {conversation.ownerId?.lastName} - <FlatName>{conversation?.flatId?.name}</FlatName>
+                  </>
               }
             </Name>
-            <LastMessage>{conversation.lastMessage || 'No messages yet'}</LastMessage>
+            <LastMessage>{conversation.lastMessage || 'No messages yet'}{conversation.unreadCount > 0 && <UnreadBadge>{conversation.unreadCount}</UnreadBadge>}</LastMessage>
           </ConversationItem>
         ))}
       </ConversationList>
@@ -100,4 +133,4 @@ const ChatSidebar = ({ conversations, selectedChat, setSelectedChat, currentUser
   );
 };
 
-export default ChatSidebar; 
+export default ChatSidebar;

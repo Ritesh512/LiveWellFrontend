@@ -182,17 +182,10 @@ const AddFlat = () => {
     const location = useLocation();
     const ownerId = JSON.parse(localStorage.getItem('user'))._id;
     const ownerMobile = JSON.parse(localStorage.getItem('user')).phone;
-    const [latitude, setLatitude] = useState(location.state?.latitude || '');
-    const [longitude, setLongitude] = useState(location.state?.longitude || '');
 
-    useEffect(() => {
-        if (location.state?.latitude && location.state?.longitude) {
-            setLatitude(location.state.latitude);
-            setLongitude(location.state.longitude);
-        }
-    }, [location.state]);
+    const savedFormData = localStorage.getItem('addFlatFormData');
 
-    const [formData, setFormData] = useState({
+    const initialFormData = {
         ownerId,
         ownerMobile,
         type: 'Flat',
@@ -229,10 +222,37 @@ const AddFlat = () => {
         taxes: 200,
         location: {
             type: 'Point',
-            coordinates: [latitude, longitude]
+            coordinates: [location.state?.latitude || 0, location.state?.longitude || 0]
         },
         totalCost: 0,
-    });
+    };
+
+    const [latitude, setLatitude] = useState(location.state?.latitude || (savedFormData ? JSON.parse(savedFormData).location.coordinates[0] : 0));
+    const [longitude, setLongitude] = useState(location.state?.longitude || (savedFormData ? JSON.parse(savedFormData).location.coordinates[1] : 0));
+    
+    // Initialize form data from local storage or with default values
+    const [formData, setFormData] = useState(savedFormData ? JSON.parse(savedFormData) : initialFormData);
+
+    useEffect(() => {
+        // Update coordinates when returning from location picker
+        if (location.state?.latitude && location.state?.longitude) {
+            setLatitude(location.state.latitude);
+            setLongitude(location.state.longitude);
+            
+            // Update form data with new coordinates
+            setFormData(prev => ({
+                ...prev,
+                location: {
+                    ...prev.location,
+                    coordinates: [location.state.latitude, location.state.longitude]
+                }
+            }));
+        }
+    }, [location.state]);
+
+    useEffect(() => {
+        localStorage.setItem('addFlatFormData', JSON.stringify(formData));
+    }, [formData]);
 
     const [featureInput, setFeatureInput] = useState('');
 
@@ -256,6 +276,8 @@ const AddFlat = () => {
     ];
 
     const handleGetCoordinates = () => {
+        // Save current form state before navigating
+        localStorage.setItem('addFlatFormData', JSON.stringify(formData));
         navigate('/get-location', { state: { latitude, longitude, origin: 'addFlat' } });
     };
 
@@ -306,8 +328,19 @@ const AddFlat = () => {
         }));
     };
 
+    const formatText = (text) => {
+        return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const formattedFormData = {
+            ...formData,
+            city: formatText(formData.city),
+            state: formatText(formData.state)
+        };
+        
         try {
             const response = await fetch('http://localhost:3000/api/flat/add', {
                 method: 'POST',
@@ -329,6 +362,18 @@ const AddFlat = () => {
             toast.error('Error adding property');
         }
     };
+
+
+    useEffect(() => {
+        // Cleanup function to remove data when component unmounts
+        return () => {
+            // Only remove if navigating away from the add flow completely
+            // Check if the navigation is not to get-location
+            if (!window.location.pathname.includes('/get-location')) {
+                localStorage.removeItem('addFlatFormData');
+            }
+        };
+    }, []);
 
 
     return (
@@ -687,7 +732,7 @@ const AddFlat = () => {
                                 onChange={handleChange}
                             />
                         </FormGroup>
-                        <Button onClick={handleGetCoordinates}>Get Coordinates</Button>
+                        <Button type="button" onClick={handleGetCoordinates}>Get Coordinates</Button>
                     </Grid>
                 </Section>
 

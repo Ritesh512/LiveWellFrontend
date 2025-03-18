@@ -317,6 +317,18 @@ export const PriceInfo = styled.div`
   text-align: right;
 `;
 
+export const TotalCostTag = styled.div`
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  margin-top: 1rem;
+  background-color: rgba(103, 192, 81, 0.88);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
 export const OriginalPrice = styled.div`
   color: #666;
   text-decoration: line-through;
@@ -387,47 +399,52 @@ export const SaleTag = styled.div`
 
 export const ConfirmationOverlay = styled.div`
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   z-index: 1000;
 `;
 
 export const ConfirmationContainer = styled.div`
   background: white;
-  padding: 24px;
-  border-radius: 8px;
-  width: 400px;
-  max-width: 90%;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
+  max-width: 400px;
+  width: 100%;
 `;
 
 export const ConfirmationTitle = styled.h2`
-  margin-bottom: 16px;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 1.5rem;
 `;
 
 export const ConfirmationButtons = styled.div`
   display: flex;
-  justify-content: space-around;
-  align-items: center;
-  margin-top: 24px;
+  justify-content: center;
+  gap: 3rem;
 `;
 
 export const ConfirmationButton = styled.button`
-  background: ${props => props.cancel ? '#ccc' : '#e53935'};
+  background-color: ${props => (props.cancel ? '#e74c3c' : '#3498db')};
   color: white;
+  padding: 0.75rem 1.5rem;
   border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
+  border-radius: 8px;
+  font-size: 1.6rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.2s;
 
   &:hover {
-    background: ${props => props.cancel ? '#bbb' : '#d32f2f'};
+    background-color: ${props => (props.cancel ? '#c0392b' : '#2980b9')};
   }
 `;
 

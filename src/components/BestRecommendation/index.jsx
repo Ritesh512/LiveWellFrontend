@@ -149,19 +149,19 @@ const BestRecommendation = () => {
             active={activeFilter === 'rooms'} 
             onClick={() => setActiveFilter('rooms')}
           >
-            <FaBed /> Rooms
+            <FaBed /> Flats
           </FilterButton>
           <FilterButton 
             active={activeFilter === 'flats'} 
             onClick={() => setActiveFilter('flats')}
           >
-            <FaBuilding /> Flats
+            <FaBuilding /> PG's
           </FilterButton>
           <FilterButton 
             active={activeFilter === 'houses'} 
             onClick={() => setActiveFilter('houses')}
           >
-            <FaHome /> Houses
+            <FaHome /> Hostel
           </FilterButton>
         </FilterButtons>
       </Header>
