@@ -586,9 +586,9 @@ const Profile = () => {
               </StatusBadge>
               <StatusBadge
                 verified={userData?.data?.numberVerified}
-                onClick={() => {
-                  if (!userData?.data?.numberVerified) sendMobileOtp();
-                }}
+                // onClick={() => {
+                //   if (!userData?.data?.numberVerified) sendMobileOtp();
+                // }}
               >
                 {userData?.data?.numberVerified ? 'Phone Verified' : 'Phone Unverified'}
               </StatusBadge>

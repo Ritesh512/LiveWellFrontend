@@ -171,20 +171,20 @@ const OtpVerification = () => {
             toast.error('Invalid phone number');
             return;
         }
-
+    
         setLoading(true);
-
-        // Ensure reCAPTCHA is initialized
+    
+        // Clear any existing reCAPTCHA and reinitialize
         if (window.recaptchaVerifier) {
             window.recaptchaVerifier.clear();
         }
         onCaptchVerify();
-
+    
         const appVerifier = window.recaptchaVerifier;
-
+    
         signInWithPhoneNumber(auth, num, appVerifier)
             .then((confirmationResult) => {
-                setFinal(confirmationResult);
+                setFinal(confirmationResult); // Store new session result
                 setLoading(false);
                 setShowOtpInput(true);
                 toast.success('OTP sent successfully!');
@@ -195,6 +195,7 @@ const OtpVerification = () => {
                 toast.error('Failed to send OTP. Check Firebase settings.');
             });
     };
+    
 
     return (
         <Container>
