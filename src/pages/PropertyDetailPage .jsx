@@ -348,10 +348,10 @@ const PropertyDetailPage = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ amount: flag ? property.totalCost : property.cost })
+        body: JSON.stringify({ amount: flag ? property.totalCost/100 : property.cost })
       });
       const data = await response.json();
-      // console.log(data);
+      console.log(data);
       initPay(data.data);
     } catch (error) {
       console.log(error);
@@ -468,7 +468,7 @@ const PropertyDetailPage = () => {
           {userId !== property.ownerId && (
             hasBooking ? (
               <BookButton onClick={() => setIsCancelConfirmationOpen(true)}>
-                Cancel Booking
+                Checkout Property
               </BookButton>
             ) : (
               <BookButton onClick={handlePay} disabled={!isEmailVerified || !isPhone || !allowBooking}>
@@ -606,8 +606,8 @@ const PropertyDetailPage = () => {
       });
 
       if (response.ok) {
-        handlePay(true);
-        toast.success('Property bought successfully!');
+        await handlePay(true);
+        // toast.success('Property bought successfully!');
         fetchPropertyDetails();
       } else {
         toast.warn('Failed to buy property');

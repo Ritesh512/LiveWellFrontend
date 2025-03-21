@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from 'react-icons/fa';
 import { toast } from 'react-toastify';
@@ -109,8 +109,10 @@ const Copyright = styled.div`
 `;
 
 const Footer = () => {
+  const [email,setEmail] = useState("");
   const handleSubscribe = () => {
     toast.success("Subscribed for the latest news and updates", { position: "top-right" });
+    setEmail("");
   };
 
   return (
@@ -151,7 +153,7 @@ const Footer = () => {
           <h3>Newsletter</h3>
           <p>Subscribe to get the latest news and updates.</p>
           <Newsletter>
-            <input type="email" placeholder="Enter your email" />
+            <input type="email" placeholder="Enter your email" value={email} onChange={(e)=>{setEmail(e.target.value)}} />
             <button onClick={handleSubscribe}>Send</button>
           </Newsletter>
         </FooterSection>
