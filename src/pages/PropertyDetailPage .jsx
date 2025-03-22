@@ -613,7 +613,7 @@ const PropertyDetailPage = () => {
 
       if (response.ok) {
         // await handlePay(true);
-        // toast.success('Property bought successfully!');
+        toast.success('Property bought successfully!');
         fetchPropertyDetails();
       } else {
         toast.warn('Failed to buy property');
