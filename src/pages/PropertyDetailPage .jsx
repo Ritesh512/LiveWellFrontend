@@ -283,9 +283,9 @@ const PropertyDetailPage = () => {
       console.error('Error submitting review:', error);
     }
   };
-  const initPay = (data) => {
+  const initPay = (data, flag=false) => {
     // const email = localStorage.getItem('email') || 'ritesh.prajapati20@vit.edu';
-
+    // console.log(data.amount*100);
     const options = {
       key: "rzp_test_zfG2bjGJ5XlCJ2",
       amount: data.amount,
@@ -326,7 +326,13 @@ const PropertyDetailPage = () => {
             ],
             isDeleted: false
           };
-          addUserBooking(bookingData);
+          if(flag){
+            console.log("buying property");
+            buyProperty();
+          }else{
+            console.log("booking property");
+            addUserBooking(bookingData);
+          }
 
         } catch (error) {
           console.log(error);
@@ -352,7 +358,7 @@ const PropertyDetailPage = () => {
       });
       const data = await response.json();
       console.log(data);
-      initPay(data.data);
+      initPay(data.data, flag);
     } catch (error) {
       console.log(error);
     }
@@ -479,7 +485,7 @@ const PropertyDetailPage = () => {
 
           {
             Saleit && role === "owner" && userId !== property.ownerId &&
-            <BookButton onClick={buyProperty} disabled={!isEmailVerified || !isPhone}>
+            <BookButton onClick={()=>handlePay(true)} disabled={!isEmailVerified || !isPhone}>
               Buy The property
             </BookButton>
           }
@@ -606,7 +612,7 @@ const PropertyDetailPage = () => {
       });
 
       if (response.ok) {
-        await handlePay(true);
+        // await handlePay(true);
         // toast.success('Property bought successfully!');
         fetchPropertyDetails();
       } else {
