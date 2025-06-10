@@ -1,5 +1,6 @@
 # 🏠 Property Management System
 
+## Description  
 A full-stack property management platform connecting tenants and property owners with rich features such as 360° virtual tours, secure login, online rent payment, and powerful admin analytics.
 
 ---
